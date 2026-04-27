@@ -1,7 +1,7 @@
 package db
 
 import (
-	"log"
+	"_discord_bot/models"
 
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
@@ -9,22 +9,35 @@ import (
 
 var DB *gorm.DB
 
-type User struct {
-	ID       uint   `gorm:"primaryKey"`
-	Username string `gorm:"uniqueIndex;not null"`
-	Password string `gorm:"not null"`
+func Init() (*gorm.DB, error) {
+	db, err := gorm.Open(sqlite.Open("database.db"), &gorm.Config{})
+	if err != nil {
+		return nil, err
+	}
+
+	if err := db.AutoMigrate(&models.User{}); err != nil {
+		return nil, err
+	}
+	cfg := models.LoadConfig()
+
+	if err := ensureAdminUser(db, cfg.AdminUsername, cfg.AdminPassword); err != nil {
+		return nil, err
+	}
+
+	return db, nil
 }
 
-func Init() {
-	var err error
+func ensureAdminUser(db *gorm.DB, username, password string) error {
+	var count int64
 
-	DB, err = gorm.Open(sqlite.Open("database.db"), &gorm.Config{})
-	if err != nil {
-		log.Fatal(err)
+	db.Model(&models.User{}).
+		Where("username = ?", username).
+		Count(&count)
+
+	if count > 0 {
+		return nil
 	}
 
-	err = DB.AutoMigrate(&User{})
-	if err != nil {
-		log.Fatal(err)
-	}
+	_, err := models.CreateUser(db, username, password)
+	return err
 }
