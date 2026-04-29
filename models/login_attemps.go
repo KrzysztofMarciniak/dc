@@ -1,23 +1,30 @@
 package models
 
 import (
+	"errors"
 	"time"
 
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
 type LoginAttempt struct {
-	ID        uint      `gorm:"primaryKey"`
-	UserID    uint      `gorm:"index;not null"`
-	Success   bool      `gorm:"not null"`
+	UUID      string    `gorm:"primaryKey;type:char(36)"`
+	UserUUID  string    `gorm:"index"`
+	Success   bool      `gorm:"index;not null"`
 	IP        string    `gorm:"index"`
 	UserAgent string    `gorm:"index"`
 	CreatedAt time.Time `gorm:"autoCreateTime"`
 }
 
-func RecordLoginAttempt(db *gorm.DB, userID uint, success bool, ip string, ua string) error {
+func RecordLoginAttempt(db *gorm.DB, userUUID string, success bool, ip string, ua string) error {
+	if db == nil {
+		return errors.New("db is nil")
+	}
+
 	attempt := LoginAttempt{
-		UserID:    userID,
+		UUID:      uuid.NewString(),
+		UserUUID:  userUUID,
 		UserAgent: ua,
 		Success:   success,
 		IP:        ip,

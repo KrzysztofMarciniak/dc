@@ -1,0 +1,21 @@
+{{ define "status" }}
+
+{{ if .success }}
+  <article>
+    <strong>Success</strong>
+    <p>{{ .success }}</p>
+  </article>
+{{ end }}
+
+{{ if .error }}
+  <article>
+    <strong>Error</strong>
+    <p>{{ .error }}</p>
+  </article>
+{{ end }}
+
+{{ if .message }}
+  <p>{{ .message }}</p>
+{{ end }}
+
+{{ end }}
