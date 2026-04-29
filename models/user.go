@@ -96,8 +96,9 @@ func DeleteUser(db *gorm.DB, uuid string) error {
 
 func Authenticate(db *gorm.DB, username, password, ip, ua string) (*User, error) {
 	u, err := GetUserByUsername(db, username)
+
 	if err != nil {
-		_ = bcrypt.CompareHashAndPassword([]byte("$2a$10$dummyhashdummyhashdummyha"), []byte(password))
+		_ = RecordLoginAttempt(db, "", false, ip, ua)
 		return nil, errors.New("invalid credentials")
 	}
 
