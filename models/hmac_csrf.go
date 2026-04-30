@@ -3,24 +3,24 @@ package models
 import (
 	"crypto/rand"
 	"encoding/hex"
+	"strconv"
 	"strings"
+	"time"
 )
 
 /*
 CSRF token format:
 
-	token = randomValue.signature
+	token = randomValue|timestamp.signature
 
 Where:
 - randomValue = 32-byte random hex string
-- signature   = HMAC(randomValue, HMACSecret.Secret)
+- timestamp   = unix seconds
+- signature   = HMAC(randomValue|timestamp, HMACSecret.Secret)
 */
 
-/* -------------------- CONFIG -------------------- */
-
 const CSRFTokenBytes = 32
-
-/* -------------------- GENERATION -------------------- */
+const CSRFTokenTTL = time.Hour
 
 func NewCSRFToken(secret string) (string, error) {
 	b := make([]byte, CSRFTokenBytes)
@@ -29,16 +29,16 @@ func NewCSRFToken(secret string) (string, error) {
 	}
 
 	value := hex.EncodeToString(b)
+	ts := strconv.FormatInt(time.Now().Unix(), 10)
+	payload := value + "|" + ts
 
-	sig, err := Sign(value, secret)
+	sig, err := Sign(payload, secret)
 	if err != nil {
 		return "", err
 	}
 
-	return value + "." + sig, nil
+	return payload + "." + sig, nil
 }
-
-/* -------------------- VALIDATION -------------------- */
 
 func ValidateCSRFToken(token string, secret string) (bool, error) {
 	parts := strings.Split(token, ".")
@@ -46,8 +46,27 @@ func ValidateCSRFToken(token string, secret string) (bool, error) {
 		return false, nil
 	}
 
-	value := parts[0]
+	payload := parts[0]
 	sig := parts[1]
 
-	return Verify(value, sig, secret)
+	ok, err := Verify(payload, sig, secret)
+	if err != nil || !ok {
+		return false, err
+	}
+
+	parts = strings.Split(payload, "|")
+	if len(parts) != 2 {
+		return false, nil
+	}
+
+	ts, err := strconv.ParseInt(parts[1], 10, 64)
+	if err != nil {
+		return false, nil
+	}
+
+	if time.Since(time.Unix(ts, 0)) > CSRFTokenTTL {
+		return false, nil
+	}
+
+	return true, nil
 }

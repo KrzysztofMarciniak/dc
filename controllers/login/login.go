@@ -13,7 +13,7 @@ import (
 type loginRequest struct {
 	Username string `form:"username" binding:"required,min=3,max=32"`
 	Password string `form:"password" binding:"required,max=72"`
-	csrf     string `form:"csrf" binding:"required"`
+	CSRF     string `form:"csrf" binding:"required"`
 }
 
 func ShowLogin(c *gin.Context) {
@@ -48,8 +48,8 @@ func Login(c *gin.Context) {
 	}
 	req.Username = strings.TrimSpace(req.Username)
 
-	csrfValidated, err := models.ValidateCSRFToken(req.csrf, db.Secret)
-	if err != nil || !csrfValidated {
+	ok, err := models.ValidateCSRFToken(req.CSRF, db.Secret)
+	if err != nil || !ok {
 		c.Redirect(http.StatusFound, "/login?error=Invalid+csrf+token")
 		return
 	}

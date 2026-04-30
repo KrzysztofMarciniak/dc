@@ -13,6 +13,8 @@ import (
 var DB *gorm.DB
 var Secret string
 
+const DBPath = "database.db"
+
 func Init() error {
 	if err := checkSQLite3Exists(); err != nil {
 		return err

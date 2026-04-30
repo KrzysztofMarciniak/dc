@@ -2,6 +2,7 @@ package router
 
 import (
 	controllerAdmin "_discord_bot/controllers/admin"
+	controllers "_discord_bot/controllers/admin"
 	controllerError "_discord_bot/controllers/error"
 	controllerLogin "_discord_bot/controllers/login"
 	controllerLogout "_discord_bot/controllers/logout"
@@ -41,6 +42,8 @@ func registerRoutes(r *gin.Engine) {
 		c.Redirect(http.StatusFound, "/error?error=Page+not+found")
 	})
 	r.GET("/admin-panel", controllerAdmin.ShowAdminPanel)
+	r.GET("/admin/db/download", controllerAdmin.DownloadDatabase)
+	r.POST("/admin/db/upload", controllers.UploadDatabase)
 
 	r.GET("/", controllerRoot.Index)
 

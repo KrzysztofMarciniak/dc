@@ -31,7 +31,8 @@
     <article style="border: 1px solid var(--pico-muted-border-color); border-radius: 0.75rem; padding: 1rem;">
       <header><strong>System Overview</strong></header>
 
-      <div class="grid">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem 1.5rem;">
+
         <div>
           <p><strong>Server Time:</strong> {{ .serverTime }}</p>
           <p><strong>Uptime:</strong> {{ .uptime }}</p>
@@ -39,11 +40,50 @@
 
         <div>
           <p><strong>Total Requests:</strong> {{ .totalRequests }}</p>
+          <p><strong>DB Status:</strong> {{ .dbStatus }}</p>
         </div>
 
         <div>
-          <p><strong>DB Status:</strong> {{ .dbStatus }}</p>
+          <p><strong>DB Size:</strong> {{ .dbSize }}</p>
+          <p><strong>Your IP:</strong> {{ .clientIP }}</p>
         </div>
+
+        <div>
+          <p><a href="/admin/db/download">Download Database</a></p>
+        </div>
+<div style="grid-column: 1 / -1;">
+  <form action="/admin/db/upload" method="POST" enctype="multipart/form-data"
+        style="display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap;">
+
+    <input type="hidden" name="csrf" value="{{ .csrf }}">
+
+    <input type="file" name="database" accept=".db" required>
+
+    <button type="submit">Upload Database</button>
+
+  </form>
+
+  <p style="font-size: 0.8rem; opacity: 0.7; margin-top: 0.3rem;">
+    This will overwrite current database.db
+  </p>
+</div>
+
+        <div style="grid-column: 1 / -1;">
+          <p style="margin: 0; word-break: break-word;">
+            <strong>Your User Agent:</strong><br>
+            <span style="display:block; overflow-wrap:anywhere;">
+              {{ .userAgent }}
+            </span>
+          </p>
+        </div>
+
+        <div style="grid-column: 1 / -1;">
+          <p style="margin: 0; word-break: break-all; font-family: monospace;">
+            <strong>DB SHA256:</strong><br>
+            {{ .dbHash }}
+          </p>
+        </div>
+
       </div>
     </article>
   </section>
@@ -87,7 +127,6 @@
 
                   <td>{{ .CreatedAtPretty }}</td>
 
-                  <!-- Username with hover UUID -->
                   <td>
                     <span class="uuid-wrap"
                           onmouseenter="this.querySelector('.uuid-tooltip').style.display='block'"
@@ -120,7 +159,7 @@
               {{ end }}
             {{ else }}
               <tr>
-                <td colspan="6">No login attempts</td>
+                <td colspan="5">No login attempts</td>
               </tr>
             {{ end }}
           </tbody>
