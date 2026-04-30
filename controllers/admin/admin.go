@@ -105,12 +105,31 @@ func ShowAdminPanel(c *gin.Context) {
 		})
 		return
 	}
+	user, _ := models.GetUserByUUID(db.DB, auth.UUID)
+	timeLeft := models.PasswordTimeLeft(user)
+
+	var passwordExpiry string
+
+	if timeLeft <= 0 {
+		passwordExpiry = "expired"
+	} else {
+		totalMinutes := int(timeLeft.Minutes())
+
+		days := totalMinutes / (60 * 24)
+		remainingMinutes := totalMinutes % (60 * 24)
+
+		hours := remainingMinutes / 60
+		minutes := remainingMinutes % 60
+
+		passwordExpiry = fmt.Sprintf("%dd %dh %dm", days, hours, minutes)
+	}
 
 	c.HTML(http.StatusOK, "admin-panel.tmpl", gin.H{
 		"title":         "Admin Panel",
 		"auth":          auth,
 		"isLogged":      true,
 		"loginAttempts": attempts,
+		"timeLeft":      passwordExpiry,
 
 		"page":       page,
 		"totalPages": totalPages,
@@ -141,7 +160,9 @@ func DownloadDatabase(c *gin.Context) {
 		return
 	}
 
-	c.FileAttachment(db.DBPath, "database.db")
+	filename := fmt.Sprintf("database-%s.db", time.Now().Format("2006-01-02"))
+
+	c.FileAttachment(db.DBPath, filename)
 }
 
 func UploadDatabase(c *gin.Context) {

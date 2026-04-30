@@ -2,10 +2,11 @@ package router
 
 import (
 	controllerAdmin "_discord_bot/controllers/admin"
-	controllers "_discord_bot/controllers/admin"
 	controllerError "_discord_bot/controllers/error"
 	controllerLogin "_discord_bot/controllers/login"
 	controllerLogout "_discord_bot/controllers/logout"
+	controllerPassword "_discord_bot/controllers/password"
+
 	controllerRoot "_discord_bot/controllers/root"
 	"_discord_bot/middleware"
 	"net/http"
@@ -26,6 +27,7 @@ func New() *gin.Engine {
 	r.Use(middleware.TotalRequestsMiddleware())
 	r.Use(middleware.AuthContextMiddleware())
 	r.Use(middleware.AuthGateMiddleware("/login", "/error", "/logout"))
+	r.Use(middleware.PasswordPolicyMiddleware())
 
 	registerRoutes(r)
 
@@ -43,7 +45,9 @@ func registerRoutes(r *gin.Engine) {
 	})
 	r.GET("/admin-panel", controllerAdmin.ShowAdminPanel)
 	r.GET("/admin/db/download", controllerAdmin.DownloadDatabase)
-	r.POST("/admin/db/upload", controllers.UploadDatabase)
+	r.POST("/admin/db/upload", controllerAdmin.UploadDatabase)
+	r.GET("/change-password", controllerPassword.ShowChangePassword)
+	r.POST("/change-password", controllerPassword.ChangePassword)
 
 	r.GET("/", controllerRoot.Index)
 

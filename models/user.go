@@ -10,11 +10,12 @@ import (
 )
 
 type User struct {
-	UUID      string    `gorm:"primaryKey;uniqueIndex;not null" json:"uuid"`
-	Username  string    `gorm:"uniqueIndex;not null" json:"username"`
-	Password  string    `gorm:"not null" json:"-"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	UUID               string    `gorm:"primaryKey;uniqueIndex;not null" json:"uuid"`
+	Username           string    `gorm:"uniqueIndex;not null" json:"username"`
+	Password           string    `gorm:"not null" json:"-"`
+	CreatedAt          time.Time `json:"created_at"`
+	UpdatedAt          time.Time `json:"updated_at"`
+	LastPasswordChange time.Time `gorm:"index"`
 }
 
 func (u *User) HashPassword() error {
@@ -112,4 +113,13 @@ func Authenticate(db *gorm.DB, username, password, ip, ua string) (*User, error)
 	}
 
 	return u, nil
+}
+
+func PasswordExpired(u *User) bool {
+	return time.Since(u.LastPasswordChange) > 30*24*time.Hour
+}
+
+func PasswordTimeLeft(u *User) time.Duration {
+	expiry := u.LastPasswordChange.Add(30 * 24 * time.Hour)
+	return time.Until(expiry)
 }

@@ -46,8 +46,22 @@
         <div>
           <p><strong>DB Size:</strong> {{ .dbSize }}</p>
           <p><strong>Your IP:</strong> {{ .clientIP }}</p>
-        </div>
 
+          <p style="margin: 0; word-break: break-word;">
+            <strong>Your User Agent:</strong><br>
+            <span style="display:block; overflow-wrap:anywhere;">
+              {{ .userAgent }}
+            </span>
+          </p>
+
+          <p style="margin: 0; word-break: break-word;">
+            <strong>Password Expires in:</strong><br>
+            <span style="display:block; overflow-wrap:anywhere;">
+              {{ .timeLeft }}
+            </span>
+          </p>
+
+        </div>
         <div>
           <p><a href="/admin/db/download">Download Database</a></p>
         </div>
@@ -68,14 +82,6 @@
   </p>
 </div>
 
-        <div style="grid-column: 1 / -1;">
-          <p style="margin: 0; word-break: break-word;">
-            <strong>Your User Agent:</strong><br>
-            <span style="display:block; overflow-wrap:anywhere;">
-              {{ .userAgent }}
-            </span>
-          </p>
-        </div>
 
         <div style="grid-column: 1 / -1;">
           <p style="margin: 0; word-break: break-all; font-family: monospace;">
