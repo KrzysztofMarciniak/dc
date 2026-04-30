@@ -1,5 +1,7 @@
 # dc
 
+![admin panel](imgs/admin.png)
+
 
 libs{
     gin
