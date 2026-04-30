@@ -1,9 +1,11 @@
 package router
 
 import (
+	controllerAdmin "_discord_bot/controllers/admin"
 	controllerError "_discord_bot/controllers/error"
 	controllerLogin "_discord_bot/controllers/login"
 	controllerLogout "_discord_bot/controllers/logout"
+	controllerRoot "_discord_bot/controllers/root"
 	"_discord_bot/middleware"
 	"net/http"
 
@@ -20,6 +22,7 @@ func New() *gin.Engine {
 	r.SetTrustedProxies([]string{"127.0.0.1"})
 	r.Use(gin.Logger(), gin.Recovery())
 
+	r.Use(middleware.TotalRequestsMiddleware())
 	r.Use(middleware.AuthContextMiddleware())
 	r.Use(middleware.AuthGateMiddleware("/login", "/error", "/logout"))
 
@@ -34,9 +37,11 @@ func registerRoutes(r *gin.Engine) {
 	r.POST("/login", controllerLogin.Login)
 	r.GET("/logout", controllerLogout.Logout)
 	r.GET("/error", controllerError.ShowError)
-
-	r.GET("/health", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{"ok": true})
+	r.NoRoute(func(c *gin.Context) {
+		c.Redirect(http.StatusFound, "/error?error=Page+not+found")
 	})
+	r.GET("/admin-panel", controllerAdmin.ShowAdminPanel)
+
+	r.GET("/", controllerRoot.Index)
 
 }

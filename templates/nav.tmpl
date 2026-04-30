@@ -1,0 +1,40 @@
+{{ define "nav" }}
+<nav class="container-fluid">
+  <ul>
+    <li><strong>Discord Bot Management System</strong></li>
+  </ul>
+  <ul>
+    {{ if .isLogged }}
+      <li>
+        <a href="/admin-panel">Admin Panel</a>
+      </li>
+      <li>
+        <form method="GET" action="/logout">
+          <button type="submit" class="secondary">Logout</button>
+        </form>
+      </li>
+    {{ else }}
+      <li>
+        <a href="/login" role="button">Login</a>
+      </li>
+    {{ end }}
+    <li>
+<details class="dropdown" style="font-size: 0.85rem; display: inline-block;">
+  <summary style="padding: 0.25rem 0.5rem;">Theme</summary>
+  <ul style="
+    width: max-content;
+    min-width: 120px;
+    display: inline-flex;
+    flex-direction: column;
+    padding: 0.25rem 0;
+    margin: 0;
+  ">
+    <li><a href="#" data-theme-switcher="auto" style="padding: 0.3rem 0.6rem; display: block;">Auto</a></li>
+    <li><a href="#" data-theme-switcher="light" style="padding: 0.3rem 0.6rem; display: block;">Light</a></li>
+    <li><a href="#" data-theme-switcher="dark" style="padding: 0.3rem 0.6rem; display: block;">Dark</a></li>
+  </ul>
+</details>
+    </li>
+  </ul>
+</nav>
+{{ end }}

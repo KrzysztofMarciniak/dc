@@ -1,0 +1,88 @@
+{{ template "header" . }}
+{{ template "nav" . }}
+{{ template "status" . }}
+
+<section>
+  <article>
+    <header><strong>System Overview</strong></header>
+
+    <div class="grid">
+      <div>
+        <p><strong>Server Time:</strong> {{ .serverTime }}</p>
+        <p><strong>Uptime:</strong> {{ .uptime }}</p>
+      </div>
+
+      <div>
+        <p><strong>Total Requests:</strong> {{ .totalRequests }}</p>
+      </div>
+
+      <div>
+        <p><strong>DB Status:</strong> {{ .dbStatus }}</p>
+      </div>
+    </div>
+  </article>
+</section>
+
+<div class="grid">
+
+  <aside>
+    <article>
+      <header><strong>Navigation</strong></header>
+      <nav>
+        <ul>
+          <li><a href="#">Dashboard</a></li>
+          <li><a href="#">Users</a></li>
+          <li><a href="#">Logs</a></li>
+          <li><a href="#">System</a></li>
+          <li><a href="#">Settings</a></li>
+        </ul>
+      </nav>
+    </article>
+  </aside>
+
+  <main>
+    <article>
+      <header><strong>Login Attempts</strong></header>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Time</th>
+            <th>User UUID</th>
+            <th>Success</th>
+            <th>IP</th>
+            <th>User Agent</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {{ if .loginAttempts }}
+            {{ range .loginAttempts }}
+              <tr>
+                <td>{{ .CreatedAt }}</td>
+                <td>{{ .UserUUID }}</td>
+                <td>
+                  {{ if .Success }}
+                    <span style="color: green;">true</span>
+                  {{ else }}
+                    <span style="color: red;">false</span>
+                  {{ end }}
+                </td>
+                <td>{{ .IP }}</td>
+                <td>{{ .UserAgent }}</td>
+              </tr>
+            {{ end }}
+          {{ else }}
+            <tr>
+              <td colspan="5">No login attempts</td>
+            </tr>
+          {{ end }}
+        </tbody>
+      </table>
+
+    </article>
+  </main>
+
+</div>
+
+{{ template "footer" . }}

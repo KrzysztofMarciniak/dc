@@ -32,3 +32,39 @@ func RecordLoginAttempt(db *gorm.DB, userUUID string, success bool, ip string, u
 
 	return db.Create(&attempt).Error
 }
+
+func GetLoginAttempts(db *gorm.DB, limit int) ([]LoginAttempt, error) {
+	var attempts []LoginAttempt
+
+	if db == nil {
+		return nil, gorm.ErrInvalidDB
+	}
+
+	err := db.
+		Order("created_at DESC").
+		Limit(limit).
+		Find(&attempts).Error
+
+	return attempts, err
+}
+
+func GetLoginAttemptsPaginated(db *gorm.DB, limit int, offset int) ([]LoginAttempt, int64, error) {
+	var attempts []LoginAttempt
+	var total int64
+
+	if db == nil {
+		return nil, 0, gorm.ErrInvalidDB
+	}
+
+	if err := db.Model(&LoginAttempt{}).Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
+	err := db.
+		Order("created_at DESC").
+		Limit(limit).
+		Offset(offset).
+		Find(&attempts).Error
+
+	return attempts, total, err
+}

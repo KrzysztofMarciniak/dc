@@ -1,36 +1,29 @@
-{{ define "content" }}
-
-<header>
-  <h2>Login</h2>
-</header>
-
+{{ template "header" . }}
+{{ template "nav" . }}
 {{ template "status" . }}
 
 {{ if .isLogged }}
-
   <article>
     <strong>Already logged in</strong>
     <p>Welcome, {{ .auth.Username }}.</p>
   </article>
-
 {{ else }}
-
+  <article>
 <form method="POST" action="/login">
-
   <label>
     Username
-    <input type="text" name="username" placeholder="Username" required autofocus>
+    <input type="text" name="username" required>
   </label>
 
   <label>
     Password
-    <input type="password" name="password" placeholder="Password" required>
+    <input type="password" name="password" required>
   </label>
 
   <button type="submit">Login</button>
-
 </form>
 
-{{ end }}
+  </article>
+{{end}}
 
-{{ end }}
+{{ template "footer" . }}

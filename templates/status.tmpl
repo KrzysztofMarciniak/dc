@@ -1,21 +1,24 @@
 {{ define "status" }}
 
 {{ if .success }}
-  <article>
-    <strong>Success</strong>
+  <article style="border-left: 6px solid #2ecc71;">
+    <header><strong>Success</strong></header>
     <p>{{ .success }}</p>
   </article>
 {{ end }}
 
 {{ if .error }}
-  <article>
-    <strong>Error</strong>
+  <article style="border-left: 6px solid #e74c3c;">
+    <header><strong>Error</strong></header>
     <p>{{ .error }}</p>
   </article>
 {{ end }}
 
 {{ if .message }}
-  <p>{{ .message }}</p>
+  <article style="border-left: 6px solid #3498db;">
+    <header><strong>Message</strong></header>
+    <p>{{ .message }}</p>
+  </article>
 {{ end }}
 
 {{ end }}
