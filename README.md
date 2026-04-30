@@ -1,5 +1,15 @@
 # dc
 
-gin
-go-sqlite3
 
+libs{
+    gin
+
+
+    gorm
+}
+
+
+nginx front
+pico.css
+docker compose
+MVC

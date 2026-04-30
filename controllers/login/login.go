@@ -13,13 +13,25 @@ import (
 type loginRequest struct {
 	Username string `form:"username" binding:"required,min=3,max=32"`
 	Password string `form:"password" binding:"required,max=72"`
+	csrf     string `form:"csrf" binding:"required"`
 }
 
 func ShowLogin(c *gin.Context) {
 	auth, ok := middleware.GetAuth(c)
+	csrf, err := models.NewCSRFToken(db.Secret)
 
+	if err != nil {
+		c.HTML(http.StatusInternalServerError, "login.tmpl", gin.H{
+			"title":    "Login",
+			"error":    "Internal CSRF generation error",
+			"auth":     auth,
+			"isLogged": ok,
+		})
+		return
+	}
 	c.HTML(http.StatusOK, "login.tmpl", gin.H{
 		"title":    "Login",
+		"csrf":     csrf,
 		"success":  c.Query("success"),
 		"error":    c.Query("error"),
 		"auth":     auth,
@@ -35,6 +47,12 @@ func Login(c *gin.Context) {
 		return
 	}
 	req.Username = strings.TrimSpace(req.Username)
+
+	csrfValidated, err := models.ValidateCSRFToken(req.csrf, db.Secret)
+	if err != nil || !csrfValidated {
+		c.Redirect(http.StatusFound, "/login?error=Invalid+csrf+token")
+		return
+	}
 
 	user, err := models.Authenticate(
 		db.DB,

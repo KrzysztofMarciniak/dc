@@ -10,6 +10,7 @@
 {{ else }}
   <article>
 <form method="POST" action="/login">
+    <input type="hidden" name="csrf" value="{{ .csrf }}">
   <label>
     Username
     <input type="text" name="username" required>

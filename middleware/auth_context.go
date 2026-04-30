@@ -80,7 +80,7 @@ func AuthGateMiddleware(allowed ...string) gin.HandlerFunc {
 
 		// ONLY use context here
 		if _, exists := c.Get(AuthKey); !exists {
-			c.Redirect(302, "/error?message=Please+log+in")
+			c.Redirect(302, "/error?error=Please+log+in")
 			c.Abort()
 			return
 		}
