@@ -1,24 +1,192 @@
 {{ define "status" }}
 
+<style>
+  /* container fixes left-edge issue */
+  .notify-container {
+    position: fixed;
+    top: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    z-index: 9999;
+  }
+
+  .notify {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+
+    width: fit-content;
+    max-width: 360px;
+
+    padding: 12px 14px;
+
+    border-radius: 8px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+
+    position: relative;
+
+    /* animation */
+    animation: slideIn 180ms ease-out, fadeIn 180ms ease-out;
+  }
+
+  @keyframes slideIn {
+    from { transform: translateY(-10px); opacity: 0; }
+    to   { transform: translateY(0); opacity: 1; }
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+
+  .notify-exit {
+    animation: fadeOut 160ms ease-in forwards;
+  }
+
+  @keyframes fadeOut {
+    to { opacity: 0; transform: translateY(-6px); }
+  }
+
+  .notify-icon {
+    flex: 0 0 auto;
+    margin-top: 2px;
+  }
+
+  .notify-content header {
+    font-weight: 600;
+    margin: 0;
+  }
+
+  .notify-content p {
+    margin: 4px 0 0 0;
+    word-break: break-word;
+  }
+
+  .notify-close {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    cursor: pointer;
+    background: transparent;
+    border: none;
+    padding: 2px;
+    color: #666;
+  }
+
+  .success { border-left: 5px solid #2ecc71; }
+  .error   { border-left: 5px solid #e74c3c; }
+  .info    { border-left: 5px solid #3498db; }
+</style>
+<script>
+  function closeNotify(el) {
+    const node = el.closest(".notify");
+    if (node) node.classList.add("notify-exit");
+
+    setTimeout(() => {
+      if (node) node.remove();
+    }, 160);
+
+    const url = new URL(window.location.href);
+    const params = url.searchParams;
+
+    params.delete("success");
+    params.delete("error");
+    params.delete("message");
+
+    const newUrl =
+      url.pathname +
+      (params.toString() ? "?" + params.toString() : "");
+
+    window.history.replaceState({}, "", newUrl);
+  }
+</script>
+<div class="notify-container">
+
 {{ if .success }}
-  <article style="border-left: 6px solid #2ecc71;">
-    <header><strong>Success</strong></header>
+<article class="notify success">
+  <button class="notify-close" onclick="closeNotify(this)">
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18"
+         viewBox="0 0 24 24" fill="none" stroke="currentColor"
+         stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M18 6 6 18"/>
+      <path d="m6 6 12 12"/>
+    </svg>
+  </button>
+
+  <div class="notify-icon" style="color:#2ecc71;">
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+         viewBox="0 0 24 24" fill="none" stroke="currentColor"
+         stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M20 6 9 17l-5-5"/>
+    </svg>
+  </div>
+
+  <div class="notify-content">
+    <header style="color:#2ecc71;">Success</header>
     <p>{{ .success }}</p>
-  </article>
+  </div>
+</article>
 {{ end }}
 
 {{ if .error }}
-  <article style="border-left: 6px solid #e74c3c;">
-    <header><strong>Error</strong></header>
+<article class="notify error">
+  <button class="notify-close" onclick="closeNotify(this)">
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18"
+         viewBox="0 0 24 24" fill="none" stroke="currentColor"
+         stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M18 6 6 18"/>
+      <path d="m6 6 12 12"/>
+    </svg>
+  </button>
+
+  <div class="notify-icon" style="color:#e74c3c;">
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+         viewBox="0 0 24 24" fill="none" stroke="currentColor"
+         stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="10"/>
+      <path d="m15 9-6 6"/>
+      <path d="m9 9 6 6"/>
+    </svg>
+  </div>
+
+  <div class="notify-content">
+    <header style="color:#e74c3c;">Error</header>
     <p>{{ .error }}</p>
-  </article>
+  </div>
+</article>
 {{ end }}
 
 {{ if .message }}
-  <article style="border-left: 6px solid #3498db;">
-    <header><strong>Message</strong></header>
+<article class="notify info">
+  <button class="notify-close" onclick="closeNotify(this)">
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18"
+         viewBox="0 0 24 24" fill="none" stroke="currentColor"
+         stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M18 6 6 18"/>
+      <path d="m6 6 12 12"/>
+    </svg>
+  </button>
+
+  <div class="notify-icon" style="color:#3498db;">
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+         viewBox="0 0 24 24" fill="none" stroke="currentColor"
+         stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="10"/>
+      <path d="M12 16v-4"/>
+      <path d="M12 8h.01"/>
+    </svg>
+  </div>
+
+  <div class="notify-content">
+    <header style="font-weight:bold;">Message</header>
     <p>{{ .message }}</p>
-  </article>
+  </div>
+</article>
 {{ end }}
+
+</div>
 
 {{ end }}

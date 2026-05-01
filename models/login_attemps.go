@@ -9,12 +9,12 @@ import (
 )
 
 type LoginAttempt struct {
-	UUID      string    `gorm:"primaryKey;type:char(36)"`
+	UUID      string    `gorm:"primaryKey;type:char(36);not null;uniqueIndex"`
 	UserUUID  string    `gorm:"index"`
 	Success   bool      `gorm:"index;not null"`
-	IP        string    `gorm:"index"`
 	UserAgent string    `gorm:"index"`
-	CreatedAt time.Time `gorm:"index;autoCreateTime"`
+	IP        string    `gorm:"index:idx_ip_created,priority:1"`
+	CreatedAt time.Time `gorm:"index:idx_ip_created,priority:2;autoCreateTime"`
 }
 
 type LoginAttemptView struct {
@@ -96,4 +96,71 @@ func GetLoginAttemptsWithUser(db *gorm.DB, limit int, offset int) ([]LoginAttemp
 		Scan(&attempts).Error
 
 	return attempts, total, err
+}
+
+type LoginAttemptChartPoint struct {
+	Date    string `json:"date"`
+	IP      string `json:"ip"`
+	Success int64  `json:"success"`
+	Failed  int64  `json:"failed"`
+}
+
+type LoginAttemptChartData struct {
+	Month  string                   `json:"month"`
+	Points []LoginAttemptChartPoint `json:"points"`
+}
+
+type loginAttemptChartRow struct {
+	Date    string
+	IP      string
+	Success int64
+	Failed  int64
+}
+
+func GetLoginAttemptChartData(db *gorm.DB, month string) (*LoginAttemptChartData, error) {
+	if db == nil {
+		return nil, gorm.ErrInvalidDB
+	}
+
+	if month == "" {
+		month = time.Now().Format("2006-01")
+	}
+
+	start, err := time.Parse("2006-01", month)
+	if err != nil {
+		return nil, errors.New("invalid month format, expected YYYY-MM")
+	}
+	end := start.AddDate(0, 1, 0)
+
+	var rows []loginAttemptChartRow
+
+	err = db.Table("login_attempts").
+		Select(`
+			strftime('%Y-%m-%d', created_at) AS date,
+			ip,
+			SUM(CASE WHEN success = 1 THEN 1 ELSE 0 END) AS success,
+			SUM(CASE WHEN success = 0 THEN 1 ELSE 0 END) AS failed
+		`).
+		Where("created_at >= ? AND created_at < ?", start, end).
+		Group("date, ip").
+		Order("date ASC, ip ASC").
+		Scan(&rows).Error
+	if err != nil {
+		return nil, err
+	}
+
+	points := make([]LoginAttemptChartPoint, 0, len(rows))
+	for _, r := range rows {
+		points = append(points, LoginAttemptChartPoint{
+			Date:    r.Date,
+			IP:      r.IP,
+			Success: r.Success,
+			Failed:  r.Failed,
+		})
+	}
+
+	return &LoginAttemptChartData{
+		Month:  month,
+		Points: points,
+	}, nil
 }

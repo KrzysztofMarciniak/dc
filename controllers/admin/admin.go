@@ -176,7 +176,7 @@ func UploadDatabase(c *gin.Context) {
 
 	valid, err := models.ValidateCSRFToken(csrf, db.Secret)
 	if err != nil || !valid {
-		c.Redirect(http.StatusFound, "/adminp-panel?error=Invalid+csrf+token")
+		c.Redirect(http.StatusFound, "/admin-panel?error=Invalid+csrf+token")
 		return
 	}
 
@@ -198,7 +198,19 @@ func UploadDatabase(c *gin.Context) {
 		return
 	}
 
-	_ = os.Rename(tmp, db.DBPath)
+	// safer replace
+	data, err := os.ReadFile(tmp)
+	if err != nil {
+		c.Redirect(http.StatusFound, "/admin-panel?error=Read+failed")
+		return
+	}
+
+	if err := os.WriteFile(db.DBPath, data, 0644); err != nil {
+		c.Redirect(http.StatusFound, "/admin-panel?error=Write+failed")
+		return
+	}
+
+	_ = os.Remove(tmp)
 
 	c.Redirect(http.StatusFound, "/admin-panel?success=Database+uploaded")
 }

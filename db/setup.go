@@ -47,7 +47,6 @@ func Init() error {
 	}
 
 	Secret = sec
-
 	return nil
 }
 

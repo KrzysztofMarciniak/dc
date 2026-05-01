@@ -35,9 +35,14 @@ func ShowChangePassword(c *gin.Context) {
 	}
 
 	c.HTML(http.StatusOK, "change-password.tmpl", gin.H{
-		"title": "Change Password",
-		"csrf":  csrf,
-		"error": c.Query("error"),
+		"title":    "Change Password",
+		"csrf":     csrf,
+		"auth":     auth,
+		"isLogged": true,
+
+		"success": c.Query("success"),
+		"error":   c.Query("error"),
+		"message": c.Query("message"),
 	})
 }
 

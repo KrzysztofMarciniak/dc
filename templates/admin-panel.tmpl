@@ -29,7 +29,7 @@
 
   <section>
     <article style="border: 1px solid var(--pico-muted-border-color); border-radius: 0.75rem; padding: 1rem;">
-      <header><strong>System Overview</strong></header>
+      <header><strong>System Overview <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-square-chart-gantt-icon lucide-square-chart-gantt"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 8h7"/><path d="M8 12h6"/><path d="M11 16h5"/></svg></strong></header>
 
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem 1.5rem;">
 
@@ -40,15 +40,15 @@
 
         <div>
           <p><strong>Total Requests:</strong> {{ .totalRequests }}</p>
-          <p><strong>DB Status:</strong> {{ .dbStatus }}</p>
+          <p><strong>DB Status:</strong> {{ .dbStatus }} <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-laugh-icon lucide-laugh"><circle cx="12" cy="12" r="10"/><path d="M18 13a6 6 0 0 1-6 5 6 6 0 0 1-6-5h12Z"/><line x1="9" x2="9.01" y1="9" y2="9"/><line x1="15" x2="15.01" y1="9" y2="9"/></svg></p>
         </div>
 
         <div>
           <p><strong>DB Size:</strong> {{ .dbSize }}</p>
-          <p><strong>Your IP:</strong> {{ .clientIP }}</p>
+          <p><strong>Your IP</strong> {{ .clientIP }}</p>
 
           <p style="margin: 0; word-break: break-word;">
-            <strong>Your User Agent:</strong><br>
+            <strong>Your User Agent</strong><br>
             <span style="display:block; overflow-wrap:anywhere;">
               {{ .userAgent }}
             </span>
@@ -63,7 +63,7 @@
 
         </div>
         <div>
-          <p><a href="/admin/db/download">Download Database</a></p>
+          <p><a href="/admin/db/download"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-download-icon lucide-download"><path d="M12 15V3"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/></svg> Download Database</a></p>
         </div>
 <div style="grid-column: 1 / -1;">
   <form action="/admin/db/upload" method="POST" enctype="multipart/form-data"
@@ -96,11 +96,11 @@
 
   <section>
     <article style="border: 1px solid var(--pico-muted-border-color); border-radius: 0.75rem; padding: 1rem;">
-      <header><strong>Navigation</strong></header>
+      <header><strong>Navigation <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-navigation-icon lucide-navigation"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg></strong></header>
 
       <nav>
         <ul>
-          <li><a href="#">Dashboard</a></li>
+          <li><a href="/change-password"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-lock-keyhole-icon lucide-lock-keyhole"><circle cx="12" cy="16" r="1"/><rect x="3" y="10" width="18" height="12" rx="2"/><path d="M7 10V7a5 5 0 0 1 10 0v3"/></svg> Change password</a></li>
           <li><a href="#">Users</a></li>
           <li><a href="#">Logs</a></li>
           <li><a href="#">System</a></li>
@@ -112,20 +112,76 @@
 
   <section>
     <article style="border: 1px solid var(--pico-muted-border-color); border-radius: 0.75rem; padding: 1rem;">
-      <header><strong>Login Attempts</strong></header>
+      <header><strong>Login Attempts <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-scan-face-icon lucide-scan-face"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><path d="M9 9h.01"/><path d="M15 9h.01"/></svg></strong></header>
 
       <div style="overflow-x:auto;">
         <table>
-          <thead>
-            <tr>
-              <th>Time</th>
-              <th>Username</th>
-              <th>Success</th>
-              <th>IP</th>
-              <th>User Agent</th>
-            </tr>
-          </thead>
+<thead>
+  <tr>
+    <th>
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+           viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+           style="vertical-align:middle; margin-right:4px;">
+        <circle cx="12" cy="12" r="10"/>
+        <path d="M12 6v6H8"/>
+      </svg>
+      Time
+    </th>
 
+    <th>
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+           viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+           style="vertical-align:middle; margin-right:4px;">
+        <path d="M16 10h2"/>
+        <path d="M16 14h2"/>
+        <path d="M6.17 15a3 3 0 0 1 5.66 0"/>
+        <circle cx="9" cy="11" r="2"/>
+        <rect x="2" y="5" width="20" height="14" rx="2"/>
+      </svg>
+      Username
+    </th>
+
+    <th>
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+           viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+           style="vertical-align:middle; margin-right:4px;">
+        <circle cx="12" cy="12" r="10"/>
+        <path d="M12 16v-4"/>
+        <path d="M12 8h.01"/>
+      </svg>
+      Success
+    </th>
+
+    <th>
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+           viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+           style="vertical-align:middle; margin-right:4px;">
+        <path d="M15 22a1 1 0 0 1-1-1v-4a1 1 0 0 1 .445-.832l3-2a1 1 0 0 1 1.11 0l3 2A1 1 0 0 1 22 17v4a1 1 0 0 1-1 1z"/>
+        <path d="M18 10a8 8 0 0 0-16 0c0 4.993 5.539 10.193 7.399 11.799a1 1 0 0 0 .601.2"/>
+        <path d="M18 22v-3"/>
+        <circle cx="10" cy="10" r="3"/>
+      </svg>
+      IP
+    </th>
+
+    <th>
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+           viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+           style="vertical-align:middle; margin-right:4px;">
+        <circle cx="10" cy="7" r="4"/>
+        <path d="M10.3 15H7a4 4 0 0 0-4 4v2"/>
+        <circle cx="17" cy="17" r="3"/>
+        <path d="m21 21-1.9-1.9"/>
+      </svg>
+      User Agent
+    </th>
+  </tr>
+</thead>
           <tbody>
             {{ if .loginAttempts }}
               {{ range .loginAttempts }}

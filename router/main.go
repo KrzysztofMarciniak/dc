@@ -48,7 +48,6 @@ func registerRoutes(r *gin.Engine) {
 	r.POST("/admin/db/upload", controllerAdmin.UploadDatabase)
 	r.GET("/change-password", controllerPassword.ShowChangePassword)
 	r.POST("/change-password", controllerPassword.ChangePassword)
-
 	r.GET("/", controllerRoot.Index)
 
 }
