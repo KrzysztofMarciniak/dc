@@ -152,7 +152,6 @@ func ShowAdminPanel(c *gin.Context) {
 		"message": c.Query("message"),
 	})
 }
-
 func DownloadDatabase(c *gin.Context) {
 	auth, ok := middleware.GetAuth(c)
 	if !ok || auth == nil {
@@ -160,11 +159,23 @@ func DownloadDatabase(c *gin.Context) {
 		return
 	}
 
-	filename := fmt.Sprintf("database-%s.db", time.Now().Format("2006-01-02"))
+	logEntry := models.InternalLog{
+		ActorUUID: auth.UUID,
+		ActorType: "user",
+		Action:    "DOWNLOAD_DATABASE_BACKUP",
+		TargetID:  "SYSTEM_DB",
+		OldValue:  "",
+		NewValue:  db.DBPath,
+		IPAddress: c.ClientIP(),
+	}
 
+	if err := models.RecordInternalLog(db.DB, logEntry); err != nil {
+		fmt.Printf("Failed to log DB download: %v\n", err)
+	}
+
+	filename := fmt.Sprintf("database-%s.db", time.Now().Format("2006-01-02"))
 	c.FileAttachment(db.DBPath, filename)
 }
-
 func UploadDatabase(c *gin.Context) {
 	auth, ok := middleware.GetAuth(c)
 	if !ok || auth == nil {
@@ -173,7 +184,6 @@ func UploadDatabase(c *gin.Context) {
 	}
 
 	csrf := c.PostForm("csrf")
-
 	valid, err := models.ValidateCSRFToken(csrf, db.Secret)
 	if err != nil || !valid {
 		c.Redirect(http.StatusFound, "/admin-panel?error=Invalid+csrf+token")
@@ -198,7 +208,6 @@ func UploadDatabase(c *gin.Context) {
 		return
 	}
 
-	// safer replace
 	data, err := os.ReadFile(tmp)
 	if err != nil {
 		c.Redirect(http.StatusFound, "/admin-panel?error=Read+failed")
@@ -211,6 +220,18 @@ func UploadDatabase(c *gin.Context) {
 	}
 
 	_ = os.Remove(tmp)
+
+	logEntry := models.InternalLog{
+		ActorUUID: auth.UUID,
+		ActorType: "user",
+		Action:    "UPLOAD_DATABASE_OVERWRITE",
+		TargetID:  "SYSTEM_DB",
+		OldValue:  "EXISTING_DATABASE_FILE",
+		NewValue:  file.Filename,
+		IPAddress: c.ClientIP(),
+	}
+
+	_ = models.RecordInternalLog(db.DB, logEntry)
 
 	c.Redirect(http.StatusFound, "/admin-panel?success=Database+uploaded")
 }

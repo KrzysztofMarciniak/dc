@@ -31,6 +31,7 @@ func Init() error {
 		&models.User{},
 		&models.LoginAttempt{},
 		&models.HMACSecret{},
+		&models.InternalLog{},
 	); err != nil {
 		return err
 	}

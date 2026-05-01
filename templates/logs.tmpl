@@ -1,0 +1,73 @@
+{{ template "header" . }}
+{{ template "nav" . }}
+{{ template "status" . }}
+
+  <article>
+    <header style="display: flex; justify-content: space-between; align-items: center;">
+    <strong>System Audit Logs</strong>
+    {{ if .TargetID }}<span> - Target: {{ .TargetID }}</span>{{ end }}
+    {{ if .ActorUUID }}<span> - Actions by Actor: {{ .ActorUUID }}</span>{{ end }}
+</header>
+
+    <table role="grid">
+        <thead>
+            <tr>
+                <th><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-calendar-icon lucide-calendar"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></svg> Timestamp</th>
+                <th><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-spotlight-icon lucide-spotlight"><path d="M15.295 19.562 16 22"/><path d="m17 16 3.758 2.098"/><path d="m19 12.5 3.026-.598"/><path d="M7.61 6.3a3 3 0 0 0-3.92 1.3l-1.38 2.79a3 3 0 0 0 1.3 3.91l6.89 3.597a1 1 0 0 0 1.342-.447l3.106-6.211a1 1 0 0 0-.447-1.341z"/><path d="M8 9V2"/></svg> Actor</th>
+                <th><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-activity-icon lucide-activity"><path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"/></svg> Action</th>
+                <th><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-target-icon lucide-target"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>Target</th>
+                <th> <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pencil-line-icon lucide-pencil-line"><path d="M13 21h8"/><path d="m15 5 4 4"/><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/></svg>Changes</th>
+                <th> <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-book-user-icon lucide-book-user"><path d="M15 13a3 3 0 1 0-6 0"/><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a1 1 0 0 1 0-5H20"/><circle cx="12" cy="8" r="2"/></svg>IP</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{ range .Logs }}
+            <!-- Inside the range .Logs loop -->
+<tr>
+    <td><small>{{ .CreatedAt.Format "2006-01-02 15:04:05" }}</small></td>
+    <td>
+        <strong>{{ .ActorType }}</strong><br>
+        <!-- Clickable Actor UUID -->
+        <a href="/admin/logs/actor/{{ .ActorUUID }}" style="font-size: 11px; text-decoration: underline;">
+            {{ .ActorUUID }}
+        </a>
+    </td>
+    <td><code>{{ .Action }}</code></td>
+    <!-- You might want to do the same for TargetID if it's a bot -->
+    <td>
+        <a href="/admin/logs/target/{{ .TargetID }}" style="font-size: 11px;">
+            {{ .TargetID }}
+        </a>
+    </td>
+    <td>
+        <div style="font-size: 11px; line-height: 1.2;">
+            <span style="color: #ff4444;">OLD: {{ .OldValue }}</span><br>
+            <span style="color: #44ff44;">NEW: {{ .NewValue }}</span>
+        </div>
+    </td>
+    <td><small>{{ .IPAddress }}</small></td>
+</tr>
+            {{ else }}
+            <tr>
+                <td colspan="6" style="text-align: center;">No logs found.</td>
+            </tr>
+            {{ end }}
+        </tbody>
+    </table>
+
+    <footer style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 16px;">
+        {{ if .hasPrev }}
+            <a href="?page={{ .prevPage }}" role="button" style="padding: 8px 16px; font-size: 14px;">&larr; Previous</a>
+        {{ else }}
+            <button disabled style="padding: 8px 16px; font-size: 14px; opacity: 0.5;">&larr; Previous</button>
+        {{ end }}
+
+        {{ if .hasNext }}
+            <a href="?page={{ .nextPage }}" role="button" style="padding: 8px 16px; font-size: 14px;">Next &rarr;</a>
+        {{ else }}
+            <button disabled style="padding: 8px 16px; font-size: 14px; opacity: 0.5;">Next &rarr;</button>
+        {{ end }}
+    </footer>
+  </article>
+
+{{ template "footer" . }}

@@ -5,6 +5,7 @@ import (
 	controllerError "_discord_bot/controllers/error"
 	controllerLogin "_discord_bot/controllers/login"
 	controllerLogout "_discord_bot/controllers/logout"
+	controllerLogs "_discord_bot/controllers/logs"
 	controllerPassword "_discord_bot/controllers/password"
 
 	controllerRoot "_discord_bot/controllers/root"
@@ -44,8 +45,14 @@ func registerRoutes(r *gin.Engine) {
 		c.Redirect(http.StatusFound, "/error?error=Page+not+found")
 	})
 	r.GET("/admin-panel", controllerAdmin.ShowAdminPanel)
+
 	r.GET("/admin/db/download", controllerAdmin.DownloadDatabase)
 	r.POST("/admin/db/upload", controllerAdmin.UploadDatabase)
+
+	r.GET("/admin/logs", controllerLogs.ViewGlobalLogs)
+	r.GET("/admin/logs/actor/:uuid", controllerLogs.ViewActorLogs)
+	r.GET("/admin/logs/target/:uuid", controllerLogs.ViewTargetLogs)
+
 	r.GET("/change-password", controllerPassword.ShowChangePassword)
 	r.POST("/change-password", controllerPassword.ChangePassword)
 	r.GET("/", controllerRoot.Index)

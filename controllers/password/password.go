@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 type changePasswordRequest struct {
@@ -92,6 +93,24 @@ func ChangePassword(c *gin.Context) {
 	}
 
 	user.LastPasswordChange = time.Now()
+
+	err = db.DB.Transaction(func(tx *gorm.DB) error {
+
+		if err := tx.Save(user).Error; err != nil {
+			return err
+		}
+		logEntry := models.InternalLog{
+			ActorUUID: auth.UUID,
+			ActorType: "user",
+			Action:    "CHANGE_PASSWORD",
+			TargetID:  user.UUID,
+			OldValue:  "REDACTED",
+			NewValue:  "REDACTED",
+			IPAddress: c.ClientIP(),
+		}
+
+		return models.RecordInternalLog(tx, logEntry)
+	})
 
 	if err := db.DB.Save(user).Error; err != nil {
 		c.Redirect(http.StatusFound, "/change-password?error=Update+failed")
