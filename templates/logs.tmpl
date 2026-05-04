@@ -28,14 +28,13 @@
     <td>
         <strong>{{ .ActorType }}</strong><br>
         <!-- Clickable Actor UUID -->
-        <a href="/admin/logs/actor/{{ .ActorUUID }}" style="font-size: 11px; text-decoration: underline;">
+        <a href="/admin-panel/logs/actor/{{ .ActorUUID }}" style="font-size: 11px; text-decoration: underline;">
             {{ .ActorUUID }}
         </a>
     </td>
     <td><code>{{ .Action }}</code></td>
-    <!-- You might want to do the same for TargetID if it's a bot -->
     <td>
-        <a href="/admin/logs/target/{{ .TargetID }}" style="font-size: 11px;">
+        <a href="/admin-panel/logs/target/{{ .TargetID }}" style="font-size: 11px;">
             {{ .TargetID }}
         </a>
     </td>

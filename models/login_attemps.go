@@ -164,3 +164,13 @@ func GetLoginAttemptChartData(db *gorm.DB, month string) (*LoginAttemptChartData
 		Points: points,
 	}, nil
 }
+func IsIPBlocked(db *gorm.DB, ip string) (bool, error) {
+	var count int64
+	oneHourAgo := time.Now().Add(-1 * time.Hour)
+
+	err := db.Model(&LoginAttempt{}).
+		Where("ip = ? AND success = ? AND created_at > ?", ip, false, oneHourAgo).
+		Count(&count).Error
+
+	return count >= 6, err
+}

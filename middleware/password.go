@@ -33,9 +33,9 @@ func PasswordPolicyMiddleware() gin.HandlerFunc {
 
 			path := c.Request.URL.Path
 
-			if path != "/change-password" && path != "/logout" {
+			if path != "/admin-panel/change-password" && path != "/logout" {
 
-				c.Redirect(http.StatusFound, "/change-password?error=Password+expired")
+				c.Redirect(http.StatusFound, "/admin-panel/change-password?error=Password+expired")
 				c.Abort()
 				return
 			}
