@@ -143,7 +143,7 @@ func UpdateBot(c *gin.Context) {
 		return
 	}
 
-	c.Redirect(200, "/admin-panel/bots/"+uuid+"?success=Updated")
+	c.Redirect(303, "/admin-panel/bots/"+uuid+"?success=Updated")
 }
 func DeleteBot(c *gin.Context) {
 	var req deleteBotRequest
