@@ -6,7 +6,7 @@ import (
 	controllerLogin "_discord_bot/controllers/login"
 	controllerLogout "_discord_bot/controllers/logout"
 	controllerLogs "_discord_bot/controllers/logs"
-	controllers "_discord_bot/controllers/manage"
+	controllerManage "_discord_bot/controllers/manage"
 	controllerPassword "_discord_bot/controllers/password"
 
 	"_discord_bot/middleware"
@@ -73,12 +73,12 @@ func registerRoutes(r *gin.Engine) {
 
 		bots := admin_panel.Group("/bots")
 		{
-			bots.GET("", controllers.ListBots)
-			bots.POST("/create", controllers.CreateBot)
+			bots.GET("", controllerManage.ListBots)
+			bots.POST("/create", controllerManage.CreateBot)
 
-			bots.GET("/:uuid", controllers.GetBot)
-			bots.POST("/:uuid/update", controllers.UpdateBot)
-			bots.POST("/:uuid/delete", controllers.DeleteBot)
+			bots.GET("/:uuid", controllerManage.GetBot)
+			bots.POST("/:uuid/update", controllerManage.UpdateBot)
+			bots.POST("/:uuid/delete", controllerManage.DeleteBot)
 		}
 	}
 }

@@ -13,6 +13,8 @@ type DiscordBotManagement struct {
 	Token     string `gorm:"type:text;not null" json:"-"` // never expose
 	PublicKey string `gorm:"size:255;not null" json:"public_key"`
 
+	Retired bool `gorm:"default:false;index"`
+
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
@@ -93,7 +95,10 @@ func UpdateDiscordBotName(db *gorm.DB, uuid, newName string) error {
 		Where("uuid = ?", uuid).
 		Update("name", newName).Error
 }
+
 func DeleteDiscordBot(db *gorm.DB, uuid string) error {
-	return db.Where("uuid = ?", uuid).
-		Delete(&DiscordBotManagement{}).Error
+	return db.
+		Where("uuid = ?", uuid).
+		Delete(&DiscordBotManagement{}).
+		Error
 }

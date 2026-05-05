@@ -69,13 +69,13 @@ func CreateBot(c *gin.Context) {
 	}
 
 	if err := c.ShouldBind(&req); err != nil {
-		c.Redirect(http.StatusFound, "/bots?error=Invalid+input")
+		c.Redirect(http.StatusFound, "/admin-panel/bots?error=Invalid+input")
 		return
 	}
 
 	ok, err := models.ValidateCSRFToken(req.CSRF, db.Secret)
 	if err != nil || !ok {
-		c.Redirect(http.StatusFound, "/bots?error=Invalid+csrf")
+		c.Redirect(http.StatusFound, "/admin-panel/bots?error=Invalid+csrf")
 		return
 	}
 
@@ -83,11 +83,11 @@ func CreateBot(c *gin.Context) {
 
 	_, err = models.CreateDiscordBot(db.DB, req.Name, req.Token, req.PublicKey)
 	if err != nil {
-		c.Redirect(http.StatusFound, "/bots?error=Create+failed")
+		c.Redirect(http.StatusFound, "/admin-panel/bots?error=Create+failed")
 		return
 	}
 
-	c.Redirect(http.StatusFound, "/bots?success=Bot+created")
+	c.Redirect(http.StatusFound, "/admin-panel/bots?success=Bot+created")
 }
 func GetBot(c *gin.Context) {
 	auth, ok := middleware.GetAuth(c)
@@ -125,13 +125,13 @@ func UpdateBot(c *gin.Context) {
 	uuid := c.Param("uuid")
 
 	if err := c.ShouldBind(&req); err != nil {
-		c.Redirect(400, "/bots/"+uuid+"?error=Invalid+input")
+		c.Redirect(400, "/admin-panel/bots/"+uuid+"?error=Invalid+input")
 		return
 	}
 
 	ok, err := models.ValidateCSRFToken(req.CSRF, db.Secret)
 	if err != nil || !ok {
-		c.Redirect(400, "/bots/"+uuid+"?error=Invalid+csrf")
+		c.Redirect(400, "/admin-panel/bots/"+uuid+"?error=Invalid+csrf")
 		return
 	}
 
@@ -139,11 +139,11 @@ func UpdateBot(c *gin.Context) {
 
 	err = models.UpdateDiscordBotName(db.DB, uuid, req.Name)
 	if err != nil {
-		c.Redirect(500, "/bots/"+uuid+"?error=Update+failed")
+		c.Redirect(500, "/admin-panel/bots/"+uuid+"?error=Update+failed")
 		return
 	}
 
-	c.Redirect(200, "/bots/"+uuid+"?success=Updated")
+	c.Redirect(200, "/admin-panel/bots/"+uuid+"?success=Updated")
 }
 func DeleteBot(c *gin.Context) {
 	var req deleteBotRequest
@@ -155,21 +155,21 @@ func DeleteBot(c *gin.Context) {
 	uuid := c.Param("uuid")
 
 	if err := c.ShouldBind(&req); err != nil {
-		c.Redirect(400, "/bots?error=Invalid+input")
+		c.Redirect(400, "/admin-panel/bots?error=Invalid+input")
 		return
 	}
 
 	ok, err := models.ValidateCSRFToken(req.CSRF, db.Secret)
 	if err != nil || !ok {
-		c.Redirect(400, "/bots?error=Invalid+csrf")
+		c.Redirect(400, "/admin-panel/bots?error=Invalid+csrf")
 		return
 	}
 
 	err = models.DeleteDiscordBot(db.DB, uuid)
 	if err != nil {
-		c.Redirect(500, "/bots?error=Delete+failed")
+		c.Redirect(500, "/admin-panel/bots?error=Delete+failed")
 		return
 	}
 
-	c.Redirect(200, "/bots?success=Deleted")
+	c.Redirect(303, "/admin-panel/bots?success=Deleted")
 }

@@ -32,6 +32,7 @@ func Init() error {
 		&models.LoginAttempt{},
 		&models.HMACSecret{},
 		&models.InternalLog{},
+		&models.DiscordBotManagement{},
 	); err != nil {
 		return err
 	}
