@@ -15,3 +15,7 @@ nginx front
 pico.css
 docker compose
 MVC
+
+
+
+event + pipeline architecture.

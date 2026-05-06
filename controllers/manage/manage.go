@@ -4,7 +4,9 @@ import (
 	"_discord_bot/db"
 	"_discord_bot/middleware"
 	"_discord_bot/models"
+	"fmt"
 	"net/http"
+	"net/url"
 	"strconv"
 	"strings"
 
@@ -113,8 +115,11 @@ func GetBot(c *gin.Context) {
 		"csrf":     csrf,
 		"auth":     auth,
 		"isLogged": ok,
+		"success":  c.Query("success"),
+		"error":    c.Query("error"),
 	})
 }
+
 func UpdateBot(c *gin.Context) {
 	var req updateBotRequest
 	auth, ok := middleware.GetAuth(c)
@@ -125,13 +130,13 @@ func UpdateBot(c *gin.Context) {
 	uuid := c.Param("uuid")
 
 	if err := c.ShouldBind(&req); err != nil {
-		c.Redirect(400, "/admin-panel/bots/"+uuid+"?error=Invalid+input")
+		c.Redirect(303, "/admin-panel/bots/"+uuid+"?error=Invalid+input")
 		return
 	}
 
 	ok, err := models.ValidateCSRFToken(req.CSRF, db.Secret)
 	if err != nil || !ok {
-		c.Redirect(400, "/admin-panel/bots/"+uuid+"?error=Invalid+csrf")
+		c.Redirect(303, "/admin-panel/bots/"+uuid+"?error=Invalid+csrf")
 		return
 	}
 
@@ -165,11 +170,41 @@ func DeleteBot(c *gin.Context) {
 		return
 	}
 
-	err = models.DeleteDiscordBot(db.DB, uuid)
+	err = models.RetireDiscordBot(db.DB, uuid)
 	if err != nil {
-		c.Redirect(500, "/admin-panel/bots?error=Delete+failed")
+		c.Redirect(303, "/admin-panel/bots?error=Delete+failed")
 		return
 	}
 
 	c.Redirect(303, "/admin-panel/bots?success=Deleted")
+}
+func VerifyBotConnection(c *gin.Context) {
+	auth, ok := middleware.GetAuth(c)
+	if !ok || auth == nil {
+		c.Redirect(http.StatusFound, "/login")
+		return
+	}
+
+	csrf := c.PostForm("csrf")
+	if ok, err := models.ValidateCSRFToken(csrf, db.Secret); err != nil || !ok {
+		c.Redirect(http.StatusFound, "/admin-panel/bots?error=Invalid+CSRF")
+		return
+	}
+
+	uuid := c.Param("uuid")
+
+	bot, err := models.GetFullDiscordBot(db.DB, uuid)
+	if err != nil {
+		c.Redirect(http.StatusFound, "/admin-panel/bots?error=Bot+not+found")
+		return
+	}
+
+	username, err := models.ValidateBotCredentials(bot.Token)
+	if err != nil {
+		fmt.Printf("ERROR FROM DISCORD API: %v\n", err)
+		c.Redirect(http.StatusFound, "/admin-panel/bots/"+uuid+"?error=Connection+failed")
+		return
+	}
+	successMsg := url.QueryEscape("Verified as " + username)
+	c.Redirect(http.StatusFound, "/admin-panel/bots/"+uuid+"?success="+successMsg)
 }

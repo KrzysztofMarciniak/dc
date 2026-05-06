@@ -1,79 +1,120 @@
 {{ define "nav" }}
-<nav class="container-fluid" style="display:flex; justify-content:space-between; align-items:flex-start; gap:1rem;">
+<nav class="container-fluid" style="
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:1rem;
+  flex-wrap:wrap;
+">
 
   <!-- LEFT -->
-  <ul style="display:flex; align-items:center; gap:0.75rem; margin:0; padding:0;">
-    <li style="display:flex; align-items:center;">
-      <strong style="display:inline-flex; align-items:center; gap:0.45rem;">
+  <div style="display:flex; align-items:center; gap:0.6rem; min-width:0;">
+    <strong style="display:inline-flex; align-items:center; gap:0.5rem; white-space:nowrap;">
+      <span style="overflow:hidden; text-overflow:ellipsis;">
         Discord Bot Management System
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:block;">
-          <path d="M12 8V4H8"/>
-          <rect width="16" height="12" x="4" y="8" rx="2"/>
-          <path d="M2 14h2"/>
-          <path d="M20 14h2"/>
-          <path d="M15 13v2"/>
-          <path d="M9 13v2"/>
-        </svg>
-      </strong>
-    </li>
-  </ul>
+      </span>
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:block; flex:0 0 auto;">
+        <path d="M12 8V4H8"/>
+        <rect width="16" height="12" x="4" y="8" rx="2"/>
+        <path d="M2 14h2"/>
+        <path d="M20 14h2"/>
+        <path d="M15 13v2"/>
+        <path d="M9 13v2"/>
+      </svg>
+    </strong>
+  </div>
 
-  <!-- RIGHT (column) -->
-  <div style="display:flex; flex-direction:column; align-items:flex-end; gap:0.4rem;">
+  <!-- RIGHT -->
+  <div style="display:flex; align-items:center; gap:0.75rem; flex-wrap:wrap; margin-left:auto;">
 
-    <!-- TOP ROW -->
-    <ul style="display:flex; align-items:center; gap:0.5rem; margin:0; padding:0;">
-      {{ if .isLogged }}
-        <li>
-          <a href="/admin-panel" style="display:inline-flex; align-items:center; gap:0.35rem; padding:0.45rem 0.7rem; border-radius:8px; text-decoration:none;">
-            Admin Panel
-          </a>
-        </li>
+    {{ if .isLogged }}
+      <a href="/admin-panel" style="
+        display:inline-flex;
+        align-items:center;
+        gap:0.35rem;
+        padding:0.45rem 0.75rem;
+        border-radius:8px;
+        text-decoration:none;
+      ">
+        Admin Panel
+      </a>
 
-        <li>
-          <form method="GET" action="/logout" style="margin:0;">
-            <button type="submit" class="secondary" style="padding:0.45rem 0.7rem; border-radius:8px;">
-              Logout
-            </button>
-          </form>
-        </li>
-      {{ else }}
-        <li>
-          <a href="/login" role="button" style="padding:0.45rem 0.7rem; border-radius:8px; text-decoration:none;">
-            Login
-          </a>
-        </li>
-      {{ end }}
-    </ul>
-
-    <!-- BOTTOM ROW (theme switcher) -->
-    <div>
-      <details class="dropdown" style="font-size:0.85rem; position:relative;">
-        <summary style="display:inline-flex; align-items:center; justify-content:center; padding:0.35rem 0.5rem; border-radius:8px; cursor:pointer; list-style:none;">
-          Theme
-        </summary>
-
-        <ul style="
-          width:max-content;
-          min-width:120px;
-          display:flex;
-          flex-direction:column;
-          padding:0.25rem 0;
-          margin:0;
-          position:absolute;
-          right:0;
-          top:100%;
-          border-radius:10px;
-          box-shadow:0 8px 24px rgba(0,0,0,0.12);
-          z-index:10;
+      <form method="GET" action="/logout" style="margin:0;">
+        <button type="submit" class="secondary" style="
+          padding:0.45rem 0.75rem;
+          border-radius:8px;
         ">
-          <li><a href="#" data-theme-switcher="auto" style="padding:0.45rem 0.75rem; display:block;">Auto</a></li>
-          <li><a href="#" data-theme-switcher="light" style="padding:0.45rem 0.75rem; display:block;">Light</a></li>
-          <li><a href="#" data-theme-switcher="dark" style="padding:0.45rem 0.75rem; display:block;">Dark</a></li>
-        </ul>
-      </details>
-    </div>
+          Logout
+        </button>
+      </form>
+    {{ else }}
+      <a href="/login" role="button" style="
+        padding:0.45rem 0.75rem;
+        border-radius:8px;
+        text-decoration:none;
+      ">
+        Login
+      </a>
+    {{ end }}
 
+    <details class="dropdown" id="themeDropdown" style="position:relative; font-size:0.9rem;">
+      <summary style="
+        display:inline-flex;
+        align-items:center;
+        justify-content:center;
+        padding:0.45rem 0.75rem;
+        border-radius:8px;
+        cursor:pointer;
+        list-style:none;
+        user-select:none;
+      ">
+        Theme
+      </summary>
+
+      <div style="
+        position:absolute;
+        right:0;
+        top:calc(100% + 0.4rem);
+        min-width:140px;
+        border-radius:10px;
+        box-shadow:0 8px 24px rgba(0,0,0,0.12);
+        overflow:hidden;
+        z-index:10;
+      ">
+        <a href="#" data-theme-switcher="auto" style="display:block; padding:0.5rem 0.8rem; text-decoration:none;">Auto</a>
+        <a href="#" data-theme-switcher="light" style="display:block; padding:0.5rem 0.8rem; text-decoration:none;">Light</a>
+        <a href="#" data-theme-switcher="dark" style="display:block; padding:0.5rem 0.8rem; text-decoration:none;">Dark</a>
+      </div>
+    </details>
   </div>
 </nav>
+
+<script>
+(() => {
+  const dropdown = document.getElementById("themeDropdown");
+  if (!dropdown) return;
+
+  dropdown.addEventListener("click", (e) => {
+    const link = e.target.closest("[data-theme-switcher]");
+    if (!link) return;
+
+    e.preventDefault();
+    const theme = link.dataset.themeSwitcher;
+
+    if (typeof window.setTheme === "function") {
+      window.setTheme(theme);
+    } else {
+      document.documentElement.dataset.theme = theme;
+      localStorage.setItem("theme", theme);
+    }
+
+    dropdown.removeAttribute("open");
+  });
+
+  document.addEventListener("click", (e) => {
+    if (!dropdown.hasAttribute("open")) return;
+    if (!dropdown.contains(e.target)) dropdown.removeAttribute("open");
+  });
+})();
+</script>
 {{ end }}

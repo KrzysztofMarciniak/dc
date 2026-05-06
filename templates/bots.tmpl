@@ -4,12 +4,11 @@
 
 {{ if not .isLogged }}
 <article style="text-align:center; margin-top:10vh;">
-  <strong>Not authenticated</strong>
-  <p>Please log in.</p>
+    <strong>Not authenticated</strong>
+    <p>Please log in.</p>
 </article>
 
 {{ else }}
-
 <article style="
   display:flex;
   gap:24px;
@@ -18,65 +17,61 @@
   align-items:flex-start;
   flex-wrap:wrap;
 ">
+    <!-- LEFT: BOT LIST -->
+    <div style="flex:2; min-width:320px;">
+        <strong>Bots ({{ .total }})</strong>
 
-  <!-- LEFT: BOT LIST -->
-  <div style="
-    flex:2;
-    min-width:300px;
-    padding:24px;
-    border-radius:12px;
-    box-shadow:0 10px 30px rgba(0,0,0,0.4);
-  ">
-    <strong><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-bot-message-square-icon lucide-bot-message-square"><path d="M12 6V2H8"/><path d="M15 11v2"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="M20 16a2 2 0 0 1-2 2H8.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 4 20.286V8a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2z"/><path d="M9 11v2"/></svg> Bots ({{ .total }})</strong>
+        <div style="margin-top:16px; display:flex; flex-direction:column; gap:12px;">
+            {{ range .bots }}
+            <div style="
+                display:flex;
+                justify-content:space-between;
+                align-items:center;
+                padding:14px;
+                border:1px solid #374151;
+                border-radius:8px;
+            ">
+                <div>
+                    <div style="font-weight:600;">{{ .Name }}</div>
+                    <div style="font-size:12px; ">
+                        ID: {{ .UUID }}
+                    </div>
+                </div>
 
-    <div style="margin-top:16px; display:flex; flex-direction:column; gap:16px;">
-      {{ range .bots }}
-      <div style="
-        padding:16px;
-        border-radius:8px;
-        border:1px solid #374151;
-        display:flex;
-        flex-direction:column;
-        gap:10px;
-      ">
-        <div>
-          <strong>{{ .Name }}</strong><br>
-          <small>{{ .UUID }}</small><br>
-          <small style="word-break:break-all;">{{ .PublicKey }}</small>
+                <div style="display:flex; gap:8px;">
+                    <!-- SIMPLE POST BUTTON (No JS Fetch) -->
+                    <form method="POST" action="/admin-panel/bots/{{ .UUID }}/verify" style="display:inline;">
+                        <input type="hidden" name="csrf" value="{{ $.csrf }}">
+                        <button type="submit"
+                            style="border:1px solid #22c55e; padding:6px 10px; border-radius:6px; background:transparent; cursor:pointer; color:inherit;">
+                            Check Status
+                        </button>
+                    </form>
+
+                    <a href="/admin-panel/bots/{{ .UUID }}"
+                        style="border:1px solid #555; padding:6px 10px; border-radius:6px; text-decoration:none; ">
+                        View
+                    </a>
+
+                    <button onclick="openEdit('{{ .UUID }}', '{{ .Name }}')"
+                        style="border:1px solid #555; padding:6px 10px; border-radius:6px;">
+                        Edit
+                    </button>
+
+                    <button onclick="confirmDelete('{{ .UUID }}')"
+                        style="border:none; padding:6px 10px; border-radius:6px;">
+                        Delete
+                    </button>
+                </div>
+            </div>
+            {{ else }}
+            <p>No bots found.</p>
+            {{ end }}
         </div>
-
-        <div style="display:flex; gap:8px; flex-wrap:wrap;">
-
-          <a href="/admin-panel/bots/{{ .UUID }}"
-             style="border:1px solid #555; border-radius:6px; text-decoration:none;">
-            View
-          </a>
-
-          <form method="POST" action="/admin-panel/bots/{{ .UUID }}/update"
-                style="display:flex; ">
-            <input type="hidden" name="csrf" value="{{ $.csrf }}">
-            <input name="name" placeholder="New name" required style="padding:6px;">
-            <button type="submit">Update</button>
-          </form>
-
-          <form method="POST" action="/admin-panel/bots/{{ .UUID }}/delete">
-            <input type="hidden" name="csrf" value="{{ $.csrf }}">
-            <button type="submit"
-              style="background:#7f1d1d; color:white; border:none; padding:6px 10px; border-radius:6px;">
-              Delete
-            </button>
-          </form>
-
-        </div>
-      </div>
-      {{ else }}
-      <p>No bots found.</p>
-      {{ end }}
     </div>
-  </div>
 
-  <!-- RIGHT: CREATE -->
-  <div style="
+    <!-- RIGHT: CREATE + EDIT -->
+    <div style="
     flex:1;
     min-width:280px;
     padding:24px;
@@ -84,37 +79,65 @@
     box-shadow:0 10px 30px rgba(0,0,0,0.4);
     display:flex;
     flex-direction:column;
-    gap:16px;
+    gap:20px;
   ">
-    <strong><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-smile-plus-icon lucide-smile-plus"><path d="M22 11v1a10 10 0 1 1-9-10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" x2="9.01" y1="9" y2="9"/><line x1="15" x2="15.01" y1="9" y2="9"/><path d="M16 5h6"/><path d="M19 2v6"/></svg> Create Bot</strong>
+        <a href="https://discord.com/developers/applications/" target="_blank">Discord Developer System</a>
 
-    <form method="POST" action="/admin-panel/bots/create"
-          style="display:flex; flex-direction:column; gap:12px;">
-      <input type="hidden" name="csrf" value="{{ .csrf }}">
+        <!-- CREATE -->
+        <div>
+            <strong>Create Bot</strong>
+            <form method="POST" action="/admin-panel/bots/create"
+                style="display:flex; flex-direction:column; gap:10px; margin-top:10px;">
+                <input type="hidden" name="csrf" value="{{ .csrf }}">
 
-      <label>
-        Name
-        <input name="name" required style="width:100%; padding:8px; margin-top:4px;">
-      </label>
+                <input name="name" placeholder="Name" required style="padding:8px; border:1px solid #374151; ">
+                <input name="token" type="password" placeholder="Token" required style="padding:8px; border:1px solid #374151; ">
+                <input name="public_key" placeholder="Public Key" required style="padding:8px; border:1px solid #374151; ">
 
-      <label>
-        Token
-        <input name="token" required style="width:100%; padding:8px; margin-top:4px;">
-      </label>
+                <button type="submit" style="padding:10px; border:none; border-radius:6px; cursor:pointer;">Create</button>
+            </form>
+        </div>
 
-      <label>
-        Public Key
-        <input name="public_key" required style="width:100%; padding:8px; margin-top:4px;">
-      </label>
+        <!-- EDIT -->
+        <div id="editBox" style="display:none;">
+            <strong>Edit Bot</strong>
+            <form method="POST" id="editForm"
+                style="display:flex; flex-direction:column; gap:10px; margin-top:10px;">
+                <input type="hidden" name="csrf" value="{{ .csrf }}">
+                <input type="hidden" name="uuid" id="editUUID">
 
-      <button type="submit" style="padding:10px;">
-        Create
-      </button>
-    </form>
-  </div>
+                <input name="name" id="editName" required style="padding:8px; border:1px solid #374151; ">
 
+                <button type="submit" style="padding:10px; border:none; border-radius:6px; cursor:pointer;">Save</button>
+            </form>
+        </div>
+    </div>
 </article>
 
-{{ end }}
+<script>
+function openEdit(uuid, name) {
+    const box = document.getElementById("editBox");
+    const form = document.getElementById("editForm");
+    document.getElementById("editUUID").value = uuid;
+    document.getElementById("editName").value = name;
+    form.action = "/admin-panel/bots/" + uuid + "/update";
+    box.style.display = "block";
+    box.scrollIntoView({ behavior: "smooth" });
+}
 
+function confirmDelete(uuid) {
+    if (!confirm("Delete this bot permanently?")) return;
+    const form = document.createElement("form");
+    form.method = "POST";
+    form.action = "/admin-panel/bots/" + uuid + "/delete";
+    const csrf = document.createElement("input");
+    csrf.type = "hidden";
+    csrf.name = "csrf";
+    csrf.value = "{{ .csrf }}";
+    form.appendChild(csrf);
+    document.body.appendChild(form);
+    form.submit();
+}
+</script>
+{{ end }}
 {{ template "footer" . }}

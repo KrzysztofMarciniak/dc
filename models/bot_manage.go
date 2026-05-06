@@ -1,8 +1,11 @@
 package models
 
 import (
+	"fmt"
+	"strings"
 	"time"
 
+	"github.com/bwmarrin/discordgo"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
@@ -13,7 +16,8 @@ type DiscordBotManagement struct {
 	Token     string `gorm:"type:text;not null" json:"-"` // never expose
 	PublicKey string `gorm:"size:255;not null" json:"public_key"`
 
-	Retired bool `gorm:"default:false;index"`
+	Retired    bool                  `gorm:"default:false;index"`
+	Behaviours []DiscordBotBehaviour `gorm:"foreignKey:BotUUID;references:UUID"`
 
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
@@ -42,6 +46,7 @@ func CreateDiscordBot(db *gorm.DB, name, token, publicKey string) (DiscordBotDTO
 		Name:      name,
 		Token:     token,
 		PublicKey: publicKey,
+		Retired:   false,
 	}
 
 	if err := db.Create(&bot).Error; err != nil {
@@ -52,12 +57,10 @@ func CreateDiscordBot(db *gorm.DB, name, token, publicKey string) (DiscordBotDTO
 }
 func GetDiscordBot(db *gorm.DB, uuid string) (DiscordBotDTO, error) {
 	var bot DiscordBotManagement
-
 	err := db.
 		Select("uuid", "name", "public_key").
-		Where("uuid = ?", uuid).
+		Where("uuid = ? AND retired = ?", uuid, false).
 		First(&bot).Error
-
 	if err != nil {
 		return DiscordBotDTO{}, err
 	}
@@ -74,6 +77,7 @@ func ListDiscordBots(db *gorm.DB, page, pageSize int) ([]DiscordBotDTO, int64, e
 
 	err := db.
 		Select("uuid", "name", "public_key").
+		Where("retired = ?", false).
 		Limit(pageSize).
 		Offset(offset).
 		Order("created_at desc").
@@ -96,9 +100,43 @@ func UpdateDiscordBotName(db *gorm.DB, uuid, newName string) error {
 		Update("name", newName).Error
 }
 
+// OLD, use `RetireDiscordBot`
 func DeleteDiscordBot(db *gorm.DB, uuid string) error {
 	return db.
 		Where("uuid = ?", uuid).
 		Delete(&DiscordBotManagement{}).
 		Error
+}
+func RetireDiscordBot(db *gorm.DB, uuid string) error {
+	return db.Model(&DiscordBotManagement{}).
+		Where("uuid = ?", uuid).
+		Update("retired", true).Error
+}
+
+// GetFullDiscordBot retrieves the full record including the secret Token
+func GetFullDiscordBot(db *gorm.DB, uuid string) (DiscordBotManagement, error) {
+	var bot DiscordBotManagement
+	err := db.Where("uuid = ? AND retired = ?", uuid, false).First(&bot).Error
+	return bot, err
+}
+
+func ValidateBotCredentials(token string) (string, error) {
+	if token == "" {
+		return "", fmt.Errorf("token is empty")
+	}
+
+	dg, err := discordgo.New("Bot " + strings.TrimSpace(token))
+	if err != nil {
+		return "", err
+	}
+
+	user, err := dg.User("@me")
+	if err != nil {
+		return "", err
+	}
+
+	if user.Discriminator == "0" || user.Discriminator == "" {
+		return user.Username, nil
+	}
+	return fmt.Sprintf("%s#%s", user.Username, user.Discriminator), nil
 }

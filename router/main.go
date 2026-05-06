@@ -79,6 +79,7 @@ func registerRoutes(r *gin.Engine) {
 			bots.GET("/:uuid", controllerManage.GetBot)
 			bots.POST("/:uuid/update", controllerManage.UpdateBot)
 			bots.POST("/:uuid/delete", controllerManage.DeleteBot)
+			bots.POST("/:uuid/verify", controllerManage.VerifyBotConnection)
 		}
 	}
 }
