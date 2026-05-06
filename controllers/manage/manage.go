@@ -4,7 +4,7 @@ import (
 	"_discord_bot/db"
 	"_discord_bot/middleware"
 	"_discord_bot/models"
-	"fmt"
+	"_discord_bot/services"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -110,14 +110,17 @@ func GetBot(c *gin.Context) {
 
 	csrf, _ := models.NewCSRFToken(db.Secret)
 
+	running := services.IsBotRunning(uuid)
+
 	c.HTML(http.StatusOK, "bot.tmpl", gin.H{
-		"title":    "Bot",
-		"bot":      bot,
-		"csrf":     csrf,
-		"auth":     auth,
-		"isLogged": ok,
-		"success":  c.Query("success"),
-		"error":    c.Query("error"),
+		"title":     "Bot",
+		"bot":       bot,
+		"csrf":      csrf,
+		"auth":      auth,
+		"isLogged":  ok,
+		"success":   c.Query("success"),
+		"error":     c.Query("error"),
+		"isRunning": running,
 	})
 }
 
@@ -202,10 +205,62 @@ func VerifyBotConnection(c *gin.Context) {
 
 	username, err := models.ValidateBotCredentials(bot.Token)
 	if err != nil {
-		fmt.Printf("ERROR FROM DISCORD API: %v\n", err)
+		//	fmt.Printf("ERROR FROM DISCORD API: %v\n", err)
 		c.Redirect(http.StatusFound, "/admin-panel/bots/"+uuid+"?error=Connection+failed")
 		return
 	}
 	successMsg := url.QueryEscape("Verified as " + username)
+	c.Redirect(http.StatusFound, "/admin-panel/bots/"+uuid+"?success="+successMsg)
+}
+func StartBotWorker(c *gin.Context) {
+	auth, ok := middleware.GetAuth(c)
+	if !ok || auth == nil {
+		c.Redirect(http.StatusFound, "/login")
+		return
+	}
+
+	csrf := c.PostForm("csrf")
+	if ok, err := models.ValidateCSRFToken(csrf, db.Secret); err != nil || !ok {
+		c.Redirect(http.StatusFound, "/admin-panel/bots?error=Invalid+CSRF")
+		return
+	}
+
+	uuid := c.Param("uuid")
+
+	if err := services.StartBotBackground(uuid); err != nil {
+		c.Redirect(http.StatusFound, "/admin-panel/bots/"+uuid+"?error=Connection failed")
+		return
+	}
+	if is_running := services.IsBotRunning(uuid); is_running == false {
+		c.Redirect(http.StatusFound, "/admin-panel/bots/"+uuid+"?error=Failed to start")
+		return
+	}
+	successMsg := url.QueryEscape("Worker started for bot")
+	c.Redirect(http.StatusFound, "/admin-panel/bots/"+uuid+"?success="+successMsg)
+}
+
+func StopBotWorker(c *gin.Context) {
+	auth, ok := middleware.GetAuth(c)
+	if !ok || auth == nil {
+		c.Redirect(http.StatusFound, "/login")
+		return
+	}
+
+	csrf := c.PostForm("csrf")
+	if ok, err := models.ValidateCSRFToken(csrf, db.Secret); err != nil || !ok {
+		c.Redirect(http.StatusFound, "/admin-panel/bots?error=Invalid+CSRF")
+		return
+	}
+
+	uuid := c.Param("uuid")
+
+	services.StopBot(uuid)
+
+	if is_running := services.IsBotRunning(uuid); is_running {
+		c.Redirect(http.StatusFound, "/admin-panel/bots/"+uuid+"?error=Failed+to+stop+worker")
+		return
+	}
+
+	successMsg := url.QueryEscape("Worker stopped successfully")
 	c.Redirect(http.StatusFound, "/admin-panel/bots/"+uuid+"?success="+successMsg)
 }

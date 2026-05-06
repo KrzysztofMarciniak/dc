@@ -112,7 +112,6 @@ func RetireDiscordBot(db *gorm.DB, uuid string) error {
 		Update("retired", true).Error
 }
 
-// GetFullDiscordBot retrieves the full record including the secret Token
 func GetFullDiscordBot(db *gorm.DB, uuid string) (DiscordBotManagement, error) {
 	var bot DiscordBotManagement
 	err := db.Where("uuid = ? AND retired = ?", uuid, false).First(&bot).Error
@@ -120,19 +119,22 @@ func GetFullDiscordBot(db *gorm.DB, uuid string) (DiscordBotManagement, error) {
 }
 
 func ValidateBotCredentials(token string) (string, error) {
-	if token == "" {
+	cleanedToken := strings.TrimSpace(token)
+	if cleanedToken == "" {
 		return "", fmt.Errorf("token is empty")
 	}
 
-	dg, err := discordgo.New("Bot " + strings.TrimSpace(token))
+	dg, err := discordgo.New("Bot " + cleanedToken)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("failed to initialize session: %w", err)
 	}
 
 	user, err := dg.User("@me")
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("discord auth failed: %w", err)
 	}
+
+	defer dg.Close()
 
 	if user.Discriminator == "0" || user.Discriminator == "" {
 		return user.Username, nil

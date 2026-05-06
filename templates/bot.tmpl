@@ -3,83 +3,78 @@
 {{ template "status" . }}
 
 {{ if not .isLogged }}
-<article style="text-align:center; margin-top:10vh;">
-  <strong>Not authenticated</strong>
-  <p>Please log in.</p>
+<article>
+    <strong>Not authenticated</strong>
 </article>
-
 {{ else }}
 
-<article style="
-  max-width:600px;
-  margin:40px auto;
-  padding:24px;
-  border-radius:12px;
-  box-shadow:0 10px 30px rgba(0,0,0,0.4);
-  display:flex;
-  flex-direction:column;
-  gap:16px;
-">
+<article>
+    <header>
+        <h2>
+            {{ .bot.Name }}
+            <small>[{{ if .isRunning }}Online{{ else }}Offline{{ end }}]</small>
+        </h2>
+        <code>ID: {{ .bot.UUID }}</code>
+    </header>
 
-  <div>
-<div class="bot-actions">
-    <form action="/admin-panel/bots/{{ .bot.UUID }}/verify" method="POST" style="display:inline;">
-        <input type="hidden" name="csrf" value="{{ .csrf }}">
-        <button type="submit">Check Status</button>
-    </form>
-    <a href="/admin-panel/bots/{{ .bot.UUID }}/on-message"
-       style="padding:10px; background:#10b981; color:white; text-decoration:none; border-radius:6px; font-size:14px;">
-       Manage Response Rules (X -> Y)
-    </a>
-    <!-- NEW: Simple Invite Link -->
-    <a href="https://discord.com/api/oauth2/authorize?client_id={{ .bot.ClientID }}&permissions=8&scope=bot%20applications.commands"
-       target="_blank"
-       class="invite-btn">
-       Invite to Server
-    </a>
-</div>
-    <strong>{{ .bot.Name }}</strong><br>
-    <small>UUID: {{ .bot.UUID }}</small><br>
-  <!-- UPDATE NAME -->
-  <form method="POST" action="/admin-panel/bots/{{ .bot.UUID }}/update"
-        style="display:flex; flex-direction:column; gap:8px;">
-    <input type="hidden" name="csrf" value="{{ .csrf }}">
+    <nav>
+        <!-- Start/Stop Toggle based on Memory Map -->
+        {{ if .isRunning }}
+        <form action="/admin-panel/bots/{{ .bot.UUID }}/stop" method="POST" onsubmit="handleAsyncSubmit(this)">
+            <input type="hidden" name="csrf" value="{{ .csrf }}">
+            <button type="submit">Stop Worker</button>
+        </form>
+        {{ else }}
+        <form action="/admin-panel/bots/{{ .bot.UUID }}/start" method="POST" onsubmit="handleAsyncSubmit(this)">
+            <input type="hidden" name="csrf" value="{{ .csrf }}">
+            <button type="submit">Run Worker</button>
+        </form>
+        {{ end }}
 
-    <label>
-      Update Name
-      <input name="name" required value="{{ .bot.Name }}"
-        style="width:100%; padding:8px; margin-top:4px;">
-    </label>
+        <form action="/admin-panel/bots/{{ .bot.UUID }}/verify" method="POST" onsubmit="handleAsyncSubmit(this)">
+            <input type="hidden" name="csrf" value="{{ .csrf }}">
+            <button type="submit">Verify Credentials</button>
+        </form>
 
-    <button type="submit" style="padding:10px;">
-      Save
-    </button>
-  </form>
+        <a href="/admin-panel/bots/{{ .bot.UUID }}/on-message">Behaviour Rules (X -> Y)</a>
 
-  <!-- DELETE -->
-  <form method="POST" action="/admin-panel/bots/{{ .bot.UUID }}/delete">
-    <input type="hidden" name="csrf" value="{{ .csrf }}">
+        <a href="https://discord.com/api/oauth2/authorize?client_id={{ .bot.ClientID }}&permissions=8&scope=bot%20applications.commands" target="_blank">
+            Invite Link
+        </a>
+    </nav>
 
-    <button type="submit"
-      style="
-        padding:10px;
-        background:#7f1d1d;
-        color:white;
-        border:none;
-        border-radius:6px;
-      ">
-      Delete Bot
-    </button>
-  </form>
+    <hr>
 
-  <!-- BACK -->
-  <a href="/admin-panel/bots"
-     style="margin-top:8px; text-decoration:none;">
-    ← Back to list
-  </a>
+    <section>
+        <form method="POST" action="/admin-panel/bots/{{ .bot.UUID }}/update">
+            <input type="hidden" name="csrf" value="{{ .csrf }}">
+            <label for="bot-name">Rename Bot</label>
+            <input id="bot-name" name="name" required value="{{ .bot.Name }}">
+            <button type="submit">Save</button>
+        </form>
+    </section>
 
+    <section>
+        <form method="POST" action="/admin-panel/bots/{{ .bot.UUID }}/delete" onsubmit="return confirm('Kill this bot instance?');">
+            <input type="hidden" name="csrf" value="{{ .csrf }}">
+            <button type="submit">Delete Bot</button>
+        </form>
+    </section>
+
+    <footer>
+        <a href="/admin-panel/bots">← Back to List</a>
+    </footer>
 </article>
 
+<script>
+    function handleAsyncSubmit(form) {
+        const btn = form.querySelector('button');
+        if (btn) {
+            btn.disabled = true;
+            btn.innerText = '...';
+        }
+    }
+</script>
 {{ end }}
 
 {{ template "footer" . }}

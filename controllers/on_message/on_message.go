@@ -6,15 +6,17 @@ import (
 	"_discord_bot/models"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
 
 type createOnMessageRequest struct {
-	Trigger string `form:"trigger" binding:"required"`
-	Command string `form:"command" binding:"required"`
-	Reply   string `form:"reply" binding:"required"`
-	CSRF    string `form:"csrf" binding:"required"`
+	Trigger   string `form:"trigger" binding:"required"`
+	Command   string `form:"command" binding:"required"`
+	Reply     string `form:"reply" binding:"required"`
+	ChannelID string `form:"channel_id"` // Optional: Empty means all channels
+	CSRF      string `form:"csrf" binding:"required"`
 }
 
 func ListOnMessages(c *gin.Context) {
@@ -58,7 +60,10 @@ func CreateOnMessage(c *gin.Context) {
 		return
 	}
 
-	_, err := models.CreateOnMessage(db.DB, uuid, req.Trigger, req.Command, req.Reply)
+	// Clean input and handle the optional ChannelID
+	req.ChannelID = strings.TrimSpace(req.ChannelID)
+
+	_, err := models.CreateOnMessage(db.DB, uuid, req.Trigger, req.Command, req.Reply, req.ChannelID)
 	if err != nil {
 		c.Redirect(303, "/admin-panel/bots/"+uuid+"/on-message?error=Save+failed")
 		return
@@ -77,6 +82,11 @@ func DeleteOnMessage(c *gin.Context) {
 		return
 	}
 
-	models.DeleteOnMessage(db.DB, uint(id))
+	err := models.DeleteOnMessage(db.DB, uint(id))
+	if err != nil {
+		c.Redirect(303, "/admin-panel/bots/"+uuid+"/on-message?error=Delete+failed")
+		return
+	}
+
 	c.Redirect(303, "/admin-panel/bots/"+uuid+"/on-message?success=Deleted")
 }

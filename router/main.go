@@ -81,13 +81,13 @@ func registerRoutes(r *gin.Engine) {
 			bots.POST("/:uuid/update", controllerManage.UpdateBot)
 			bots.POST("/:uuid/delete", controllerManage.DeleteBot)
 			bots.POST("/:uuid/verify", controllerManage.VerifyBotConnection)
+			bots.POST("/:uuid/start", controllerManage.StartBotWorker)
+			bots.POST("/:uuid/stop", controllerManage.StopBotWorker)
 
 			onMessage := bots.Group("/:uuid/on-message")
 			{
 				onMessage.GET("", controllerOnMessage.ListOnMessages)
-
 				onMessage.POST("", controllerOnMessage.CreateOnMessage)
-
 				onMessage.POST("/:id/delete", controllerOnMessage.DeleteOnMessage)
 			}
 		}

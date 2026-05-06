@@ -12,21 +12,30 @@
     <section style="padding:20px; border:1px solid #374151; border-radius:8px; margin-bottom:30px;">
         <form method="POST" action="/admin-panel/bots/{{ .botUUID }}/on-message">
             <input type="hidden" name="csrf" value="{{ .csrf }}">
+
             <div style="display:flex; gap:10px; margin-bottom:15px;">
                 <div style="width:80px;">
-                    <label>Prefix</label>
+                    <label style="display:block; font-size:12px; margin-bottom:4px;">Prefix</label>
                     <input name="trigger" placeholder="!" required style="width:100%;">
                 </div>
                 <div style="flex:1;">
-                    <label>Command (X)</label>
+                    <label style="display:block; font-size:12px; margin-bottom:4px;">Command (X)</label>
                     <input name="command" placeholder="hello" required style="width:100%;">
                 </div>
             </div>
+
             <div style="margin-bottom:15px;">
-                <label>Reply (Y)</label>
+                <label style="display:block; font-size:12px; margin-bottom:4px;">Channel ID (Optional)</label>
+                <input name="channel_id" placeholder="Leave empty for all channels" style="width:100%;">
+                <small style="opacity:0.6; font-size:11px;">If empty, the bot responds in every channel it can see.</small>
+            </div>
+
+            <div style="margin-bottom:15px;">
+                <label style="display:block; font-size:12px; margin-bottom:4px;">Reply (Y)</label>
                 <textarea name="reply" placeholder="Hello there!" required style="width:100%; min-height:60px;"></textarea>
             </div>
-            <button type="submit" style="width:100%; padding:10px;">Add Response Rule</button>
+
+            <button type="submit" style="width:100%; padding:10px; cursor:pointer;">Add Response Rule</button>
         </form>
     </section>
 
@@ -35,16 +44,28 @@
         {{ range .behaviours }}
         <div style="padding:15px; border-bottom:1px solid #374151; display:flex; justify-content:space-between; align-items:center;">
             <div>
-                <strong>{{ .Trigger }}{{ .Command }}</strong>
-                <p style="margin:5px 0 0; opacity:0.8;">{{ .Reply }}</p>
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <strong style="font-size:1.1rem;">{{ .Trigger }}{{ .Command }}</strong>
+                    {{ if .ChannelID }}
+                        <span style="font-size:10px; background:#374151; padding:2px 6px; border-radius:4px; color:#9ca3af;">
+                            Channel: {{ .ChannelID }}
+                        </span>
+                    {{ else }}
+                        <span style="font-size:10px; background:#1e293b; padding:2px 6px; border-radius:4px; color:#60a5fa;">
+                            Global
+                        </span>
+                    {{ end }}
+                </div>
+                <p style="margin:8px 0 0; opacity:0.8; font-family:monospace;">{{ .Reply }}</p>
             </div>
+
             <form method="POST" action="/admin-panel/bots/{{ $.botUUID }}/on-message/{{ .ID }}/delete">
                 <input type="hidden" name="csrf" value="{{ $.csrf }}">
-                <button type="submit" style="color:#ef4444; background:none; border:none; cursor:pointer;">Delete</button>
+                <button type="submit" style="color:#ef4444; background:none; border:none; cursor:pointer; font-weight:bold;">Delete</button>
             </form>
         </div>
         {{ else }}
-        <p style="text-align:center; opacity:0.5;">No response rules yet.</p>
+        <p style="text-align:center; opacity:0.5; margin-top:40px;">No response rules yet.</p>
         {{ end }}
     </div>
 </article>
