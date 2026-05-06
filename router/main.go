@@ -7,6 +7,7 @@ import (
 	controllerLogout "_discord_bot/controllers/logout"
 	controllerLogs "_discord_bot/controllers/logs"
 	controllerManage "_discord_bot/controllers/manage"
+	controllerOnMessage "_discord_bot/controllers/on_message"
 	controllerPassword "_discord_bot/controllers/password"
 
 	"_discord_bot/middleware"
@@ -80,6 +81,16 @@ func registerRoutes(r *gin.Engine) {
 			bots.POST("/:uuid/update", controllerManage.UpdateBot)
 			bots.POST("/:uuid/delete", controllerManage.DeleteBot)
 			bots.POST("/:uuid/verify", controllerManage.VerifyBotConnection)
+
+			onMessage := bots.Group("/:uuid/on-message")
+			{
+				onMessage.GET("", controllerOnMessage.ListOnMessages)
+
+				onMessage.POST("", controllerOnMessage.CreateOnMessage)
+
+				onMessage.POST("/:id/delete", controllerOnMessage.DeleteOnMessage)
+			}
 		}
+
 	}
 }

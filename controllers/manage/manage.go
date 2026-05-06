@@ -14,10 +14,10 @@ import (
 )
 
 type createBotRequest struct {
-	Name      string `form:"name" binding:"required,min=3,max=100"`
-	Token     string `form:"token" binding:"required"`
-	PublicKey string `form:"public_key" binding:"required"`
-	CSRF      string `form:"csrf" binding:"required"`
+	Name     string `form:"name" binding:"required,min=3,max=100"`
+	Token    string `form:"token" binding:"required"`
+	ClientID string `form:"client_id" binding:"required"`
+	CSRF     string `form:"csrf" binding:"required"`
 }
 
 type updateBotRequest struct {
@@ -82,8 +82,9 @@ func CreateBot(c *gin.Context) {
 	}
 
 	req.Name = strings.TrimSpace(req.Name)
+	req.ClientID = strings.TrimSpace(req.ClientID)
 
-	_, err = models.CreateDiscordBot(db.DB, req.Name, req.Token, req.PublicKey)
+	_, err = models.CreateDiscordBot(db.DB, req.Name, req.Token, req.ClientID)
 	if err != nil {
 		c.Redirect(http.StatusFound, "/admin-panel/bots?error=Create+failed")
 		return

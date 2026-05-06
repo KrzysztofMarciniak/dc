@@ -27,18 +27,19 @@ func Init() error {
 
 	DB = database
 
+	// Updated AutoMigrate with Behaviour models
 	if err := DB.AutoMigrate(
 		&models.User{},
 		&models.LoginAttempt{},
 		&models.HMACSecret{},
 		&models.InternalLog{},
 		&models.DiscordBotManagement{},
+		&models.OnMessageBehaviour{},
 	); err != nil {
 		return err
 	}
 
 	cfg := models.LoadConfig()
-
 	if err := ensureAdminUser(DB, cfg.AdminUsername, cfg.AdminPassword); err != nil {
 		return err
 	}

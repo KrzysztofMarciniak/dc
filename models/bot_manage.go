@@ -11,13 +11,12 @@ import (
 )
 
 type DiscordBotManagement struct {
-	UUID      string `gorm:"primaryKey;uniqueIndex;not null" json:"uuid"`
-	Name      string `gorm:"size:100;not null" json:"name"`
-	Token     string `gorm:"type:text;not null" json:"-"` // never expose
-	PublicKey string `gorm:"size:255;not null" json:"public_key"`
+	UUID     string `gorm:"primaryKey;uniqueIndex;not null" json:"uuid"`
+	Name     string `gorm:"size:100;not null" json:"name"`
+	Token    string `gorm:"type:text;not null" json:"-"` // never expose
+	ClientID string `gorm:"size:255;not null;default:''" json:"client_id"`
 
-	Retired    bool                  `gorm:"default:false;index"`
-	Behaviours []DiscordBotBehaviour `gorm:"foreignKey:BotUUID;references:UUID"`
+	Retired bool `gorm:"default:false;index"`
 
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
@@ -29,24 +28,24 @@ func (b *DiscordBotManagement) BeforeCreate(tx *gorm.DB) (err error) {
 }
 
 type DiscordBotDTO struct {
-	UUID      string `json:"uuid"`
-	Name      string `json:"name"`
-	PublicKey string `json:"public_key"`
+	UUID     string `json:"uuid"`
+	Name     string `json:"name"`
+	ClientID string `json:"client_id"`
 }
 
 func toDTO(b DiscordBotManagement) DiscordBotDTO {
 	return DiscordBotDTO{
-		UUID:      b.UUID,
-		Name:      b.Name,
-		PublicKey: b.PublicKey,
+		UUID:     b.UUID,
+		Name:     b.Name,
+		ClientID: b.ClientID,
 	}
 }
-func CreateDiscordBot(db *gorm.DB, name, token, publicKey string) (DiscordBotDTO, error) {
+func CreateDiscordBot(db *gorm.DB, name, token, clientId string) (DiscordBotDTO, error) {
 	bot := DiscordBotManagement{
-		Name:      name,
-		Token:     token,
-		PublicKey: publicKey,
-		Retired:   false,
+		Name:     name,
+		Token:    token,
+		Retired:  false,
+		ClientID: clientId,
 	}
 
 	if err := db.Create(&bot).Error; err != nil {
@@ -58,7 +57,7 @@ func CreateDiscordBot(db *gorm.DB, name, token, publicKey string) (DiscordBotDTO
 func GetDiscordBot(db *gorm.DB, uuid string) (DiscordBotDTO, error) {
 	var bot DiscordBotManagement
 	err := db.
-		Select("uuid", "name", "public_key").
+		Select("uuid", "name", "client_id").
 		Where("uuid = ? AND retired = ?", uuid, false).
 		First(&bot).Error
 	if err != nil {
@@ -76,7 +75,7 @@ func ListDiscordBots(db *gorm.DB, page, pageSize int) ([]DiscordBotDTO, int64, e
 	offset := (page - 1) * pageSize
 
 	err := db.
-		Select("uuid", "name", "public_key").
+		Select("uuid", "name").
 		Where("retired = ?", false).
 		Limit(pageSize).
 		Offset(offset).

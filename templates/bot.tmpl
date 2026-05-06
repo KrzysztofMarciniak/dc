@@ -22,21 +22,24 @@
 ">
 
   <div>
+<div class="bot-actions">
+    <form action="/admin-panel/bots/{{ .bot.UUID }}/verify" method="POST" style="display:inline;">
+        <input type="hidden" name="csrf" value="{{ .csrf }}">
+        <button type="submit">Check Status</button>
+    </form>
+    <a href="/admin-panel/bots/{{ .bot.UUID }}/on-message"
+       style="padding:10px; background:#10b981; color:white; text-decoration:none; border-radius:6px; font-size:14px;">
+       Manage Response Rules (X -> Y)
+    </a>
+    <!-- NEW: Simple Invite Link -->
+    <a href="https://discord.com/api/oauth2/authorize?client_id={{ .bot.ClientID }}&permissions=8&scope=bot%20applications.commands"
+       target="_blank"
+       class="invite-btn">
+       Invite to Server
+    </a>
+</div>
     <strong>{{ .bot.Name }}</strong><br>
     <small>UUID: {{ .bot.UUID }}</small><br>
-    <small>Public Key:</small>
-    <div style="
-      margin-top:4px;
-      padding:8px;
-      border:1px solid #374151;
-      border-radius:6px;
-      word-break:break-all;
-      font-size:12px;
-    ">
-      {{ .bot.PublicKey }}
-    </div>
-  </div>
-
   <!-- UPDATE NAME -->
   <form method="POST" action="/admin-panel/bots/{{ .bot.UUID }}/update"
         style="display:flex; flex-direction:column; gap:8px;">

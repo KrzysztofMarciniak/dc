@@ -1,0 +1,52 @@
+{{ template "header" . }}
+{{ template "nav" . }}
+{{ template "status" . }}
+
+<article style="max-width:800px; margin:40px auto; padding:20px;">
+    <div style="margin-bottom:24px;">
+        <h2>Bot Responses (X -> Y)</h2>
+        <a href="/admin-panel/bots/{{ .botUUID }}">← Back to Bot</a>
+    </div>
+
+    <!-- FORM -->
+    <section style="padding:20px; border:1px solid #374151; border-radius:8px; margin-bottom:30px;">
+        <form method="POST" action="/admin-panel/bots/{{ .botUUID }}/on-message">
+            <input type="hidden" name="csrf" value="{{ .csrf }}">
+            <div style="display:flex; gap:10px; margin-bottom:15px;">
+                <div style="width:80px;">
+                    <label>Prefix</label>
+                    <input name="trigger" placeholder="!" required style="width:100%;">
+                </div>
+                <div style="flex:1;">
+                    <label>Command (X)</label>
+                    <input name="command" placeholder="hello" required style="width:100%;">
+                </div>
+            </div>
+            <div style="margin-bottom:15px;">
+                <label>Reply (Y)</label>
+                <textarea name="reply" placeholder="Hello there!" required style="width:100%; min-height:60px;"></textarea>
+            </div>
+            <button type="submit" style="width:100%; padding:10px;">Add Response Rule</button>
+        </form>
+    </section>
+
+    <!-- LIST -->
+    <div>
+        {{ range .behaviours }}
+        <div style="padding:15px; border-bottom:1px solid #374151; display:flex; justify-content:space-between; align-items:center;">
+            <div>
+                <strong>{{ .Trigger }}{{ .Command }}</strong>
+                <p style="margin:5px 0 0; opacity:0.8;">{{ .Reply }}</p>
+            </div>
+            <form method="POST" action="/admin-panel/bots/{{ $.botUUID }}/on-message/{{ .ID }}/delete">
+                <input type="hidden" name="csrf" value="{{ $.csrf }}">
+                <button type="submit" style="color:#ef4444; background:none; border:none; cursor:pointer;">Delete</button>
+            </form>
+        </div>
+        {{ else }}
+        <p style="text-align:center; opacity:0.5;">No response rules yet.</p>
+        {{ end }}
+    </div>
+</article>
+
+{{ template "footer" . }}

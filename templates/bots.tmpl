@@ -33,35 +33,23 @@
             ">
                 <div>
                     <div style="font-weight:600;">{{ .Name }}</div>
-                    <div style="font-size:12px; ">
-                        ID: {{ .UUID }}
+                    <div style="font-size:12px; opacity: 0.8;">
+                        ID: {{ .UUID }}<br>
                     </div>
                 </div>
-
-                <div style="display:flex; gap:8px;">
-                    <!-- SIMPLE POST BUTTON (No JS Fetch) -->
-                    <form method="POST" action="/admin-panel/bots/{{ .UUID }}/verify" style="display:inline;">
-                        <input type="hidden" name="csrf" value="{{ $.csrf }}">
-                        <button type="submit"
-                            style="border:1px solid #22c55e; padding:6px 10px; border-radius:6px; background:transparent; cursor:pointer; color:inherit;">
-                            Check Status
-                        </button>
-                    </form>
-
+                <div>
+                    <!-- VIEW DETAILS -->
                     <a href="/admin-panel/bots/{{ .UUID }}"
-                        style="border:1px solid #555; padding:6px 10px; border-radius:6px; text-decoration:none; ">
-                        View
+                        style="border:1px solid #555; padding:6px 12px; border-radius:6px; text-decoration:none; color:inherit; font-size: 14px;">
+                        View Details
                     </a>
 
-                    <button onclick="openEdit('{{ .UUID }}', '{{ .Name }}')"
-                        style="border:1px solid #555; padding:6px 10px; border-radius:6px;">
-                        Edit
-                    </button>
-
-                    <button onclick="confirmDelete('{{ .UUID }}')"
-                        style="border:none; padding:6px 10px; border-radius:6px;">
-                        Delete
-                    </button>
+                    <!-- QUICK INVITE -->
+                    <a href="https://discord.com/api/oauth2/authorize?client_id={{ .ClientID }}&permissions=8&scope=bot%20applications.commands"
+                       target="_blank"
+                       style="background: #5865F2; color: white; padding:6px 12px; border-radius:6px; text-decoration:none; font-size: 14px;">
+                        Invite
+                    </a>
                 </div>
             </div>
             {{ else }}
@@ -70,7 +58,7 @@
         </div>
     </div>
 
-    <!-- RIGHT: CREATE + EDIT -->
+    <!-- RIGHT: CREATE -->
     <div style="
     flex:1;
     min-width:280px;
@@ -81,63 +69,24 @@
     flex-direction:column;
     gap:20px;
   ">
-        <a href="https://discord.com/developers/applications/" target="_blank">Discord Developer System</a>
+        <a href="https://discord.com/developers/applications/" target="_blank" style="font-size: 14px; color: #5865F2;">Discord Developer Portal</a>
 
-        <!-- CREATE -->
         <div>
-            <strong>Create Bot</strong>
+            <strong>Create New Bot</strong>
             <form method="POST" action="/admin-panel/bots/create"
                 style="display:flex; flex-direction:column; gap:10px; margin-top:10px;">
                 <input type="hidden" name="csrf" value="{{ .csrf }}">
 
-                <input name="name" placeholder="Name" required style="padding:8px; border:1px solid #374151; ">
-                <input name="token" type="password" placeholder="Token" required style="padding:8px; border:1px solid #374151; ">
-                <input name="public_key" placeholder="Public Key" required style="padding:8px; border:1px solid #374151; ">
+                <input name="name" placeholder="Display Name" required style="padding:10px; border:1px solid #374151; background: transparent; color: inherit; border-radius: 4px;">
+                <input name="client_id" placeholder="Client ID" required style="padding:10px; border:1px solid #374151; background: transparent; color: inherit; border-radius: 4px;">
+                <input name="token" type="password" placeholder="Bot Token" required style="padding:10px; border:1px solid #374151; background: transparent; color: inherit; border-radius: 4px;">
 
-                <button type="submit" style="padding:10px; border:none; border-radius:6px; cursor:pointer;">Create</button>
-            </form>
-        </div>
-
-        <!-- EDIT -->
-        <div id="editBox" style="display:none;">
-            <strong>Edit Bot</strong>
-            <form method="POST" id="editForm"
-                style="display:flex; flex-direction:column; gap:10px; margin-top:10px;">
-                <input type="hidden" name="csrf" value="{{ .csrf }}">
-                <input type="hidden" name="uuid" id="editUUID">
-
-                <input name="name" id="editName" required style="padding:8px; border:1px solid #374151; ">
-
-                <button type="submit" style="padding:10px; border:none; border-radius:6px; cursor:pointer;">Save</button>
+                <button type="submit" style="padding:12px; border:none; border-radius:6px; cursor:pointer; background:#5865F2; color:white; font-weight: 600; margin-top: 5px;">
+                    Register Bot
+                </button>
             </form>
         </div>
     </div>
 </article>
-
-<script>
-function openEdit(uuid, name) {
-    const box = document.getElementById("editBox");
-    const form = document.getElementById("editForm");
-    document.getElementById("editUUID").value = uuid;
-    document.getElementById("editName").value = name;
-    form.action = "/admin-panel/bots/" + uuid + "/update";
-    box.style.display = "block";
-    box.scrollIntoView({ behavior: "smooth" });
-}
-
-function confirmDelete(uuid) {
-    if (!confirm("Delete this bot permanently?")) return;
-    const form = document.createElement("form");
-    form.method = "POST";
-    form.action = "/admin-panel/bots/" + uuid + "/delete";
-    const csrf = document.createElement("input");
-    csrf.type = "hidden";
-    csrf.name = "csrf";
-    csrf.value = "{{ .csrf }}";
-    form.appendChild(csrf);
-    document.body.appendChild(form);
-    form.submit();
-}
-</script>
 {{ end }}
 {{ template "footer" . }}
