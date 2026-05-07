@@ -7,15 +7,34 @@ import (
 	"log"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/bwmarrin/discordgo"
 )
 
+type botState struct {
+	session  *discordgo.Session
+	stopTime chan struct{}
+}
+
 var (
-	// activeSessions tracks botUUID -> *discordgo.Session
-	activeSessions = make(map[string]*discordgo.Session)
+	activeSessions = make(map[string]*botState)
 	sessionMu      sync.RWMutex
 )
+
+func Execute(s *discordgo.Session, botUUID string, action models.BehaviourAction) error {
+	switch action.Type {
+	case "SEND_MESSAGE":
+		_, err := s.ChannelMessageSend(action.Target, action.Payload)
+		if err != nil {
+			log.Printf("[Bot %s] Execution Error: %v", botUUID, err)
+			return err
+		}
+	default:
+		return fmt.Errorf("unknown action type: %s", action.Type)
+	}
+	return nil
+}
 
 func StartBotBackground(botUUID string) error {
 	bot, err := models.GetFullDiscordBot(db.DB, botUUID)
@@ -28,7 +47,6 @@ func StartBotBackground(botUUID string) error {
 		return fmt.Errorf("auth check failed: %v", err)
 	}
 
-	// Synchronously kill the old session before starting a new one
 	StopBot(botUUID)
 
 	dg, err := discordgo.New("Bot " + bot.Token)
@@ -36,57 +54,87 @@ func StartBotBackground(botUUID string) error {
 		return fmt.Errorf("init error: %v", err)
 	}
 
-	// These require the Developer Portal toggles
 	dg.Identify.Intents = discordgo.IntentsGuildMessages |
 		discordgo.IntentMessageContent |
 		discordgo.IntentsDirectMessages
 
 	dg.AddHandler(handleDiscordMessage(botUUID))
 
-	// BLOCKING CALL: This waits for the handshake.
-	// If it fails with 4014 (Disallowed Intents), we catch it here.
 	if err := dg.Open(); err != nil {
 		if strings.Contains(err.Error(), "4014") {
-			return fmt.Errorf("critical: Message Content Intent is disabled in Discord Dev Portal")
+			return fmt.Errorf("critical: Message Content Intent disabled in Discord Portal")
 		}
 		return fmt.Errorf("gateway connection failed: %v", err)
 	}
 
-	// Now that it's open and verified, save it to the map
+	stopChan := make(chan struct{})
 	sessionMu.Lock()
-	activeSessions[botUUID] = dg
+	activeSessions[botUUID] = &botState{
+		session:  dg,
+		stopTime: stopChan,
+	}
 	sessionMu.Unlock()
+
+	go runOnTimeWorker(botUUID, dg, stopChan)
 
 	log.Printf("[Worker] %s is now online", username)
 	return nil
 }
 
-// StopBot kills the session and removes it from the registry
 func StopBot(botUUID string) {
 	sessionMu.Lock()
 	defer sessionMu.Unlock()
 
-	sess, exists := activeSessions[botUUID]
-	if !exists {
-		return
+	if state, exists := activeSessions[botUUID]; exists {
+		close(state.stopTime)
+		state.session.Close()
+		delete(activeSessions, botUUID)
+		log.Printf("[Bot %s] Worker Stopped", botUUID)
 	}
-
-	// 1. Attempt to close the WebSocket connection
-	if err := sess.Close(); err != nil {
-		log.Printf("[Bot %s] Error closing session: %v", botUUID, err)
-		// We still proceed to delete from map because the session is
-		// essentially dead or corrupted at this point.
-	}
-
-	// 2. Remove from the memory registry
-	delete(activeSessions, botUUID)
-	log.Printf("[Bot %s] Worker Stopped and cleared from memory", botUUID)
 }
 
-// handleDiscordMessage returns the actual handler logic
+func runOnTimeWorker(botUUID string, s *discordgo.Session, stop <-chan struct{}) {
+	ticker := time.NewTicker(30 * time.Second)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-stop:
+			return
+		case <-ticker.C:
+			var tasks []models.OnTimeBehaviour
+			db.DB.Where("bot_uuid = ? AND enabled = ?", botUUID, true).Find(&tasks)
+
+			now := time.Now().Unix()
+			for _, t := range tasks {
+				if (t.TimeType == "interval" && now-t.LastRun >= t.TimeValue) ||
+					(t.TimeType == "specific" && now >= t.TimeValue && t.LastRun == 0) {
+
+					updates := map[string]any{"last_run": now}
+					if t.TimeType == "specific" {
+						updates["enabled"] = false
+					}
+
+					if err := db.DB.Model(&t).Updates(updates).Error; err != nil {
+						log.Printf("[Bot %s] Failed to update task status: %v", botUUID, err)
+						continue
+					}
+
+					action := models.BehaviourAction{
+						Type:    "SEND_MESSAGE",
+						Target:  t.ChannelID,
+						Payload: t.Message,
+					}
+
+					Execute(s, botUUID, action)
+				}
+			}
+		}
+	}
+}
 func handleDiscordMessage(botUUID string) func(s *discordgo.Session, m *discordgo.MessageCreate) {
+	runtime := models.BotRuntime{DB: db.DB}
 	return func(s *discordgo.Session, m *discordgo.MessageCreate) {
-		// Don't reply to self or other bots
 		if m.Author.ID == s.State.User.ID || m.Author.Bot {
 			return
 		}
@@ -99,7 +147,6 @@ func handleDiscordMessage(botUUID string) func(s *discordgo.Session, m *discordg
 			Content:   m.Content,
 		}
 
-		runtime := models.BotRuntime{DB: db.DB}
 		actions, err := runtime.HandleEvent(evt)
 		if err != nil {
 			log.Printf("[Bot %s] Logic Error: %v", botUUID, err)
@@ -107,9 +154,7 @@ func handleDiscordMessage(botUUID string) func(s *discordgo.Session, m *discordg
 		}
 
 		for _, action := range actions {
-			if action.Type == "SEND_MESSAGE" {
-				s.ChannelMessageSend(action.Target, action.Payload)
-			}
+			Execute(s, botUUID, action)
 		}
 	}
 }

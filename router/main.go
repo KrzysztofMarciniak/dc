@@ -8,6 +8,7 @@ import (
 	controllerLogs "_discord_bot/controllers/logs"
 	controllerManage "_discord_bot/controllers/manage"
 	controllerOnMessage "_discord_bot/controllers/on_message"
+	controllerOnTime "_discord_bot/controllers/on_time"
 	controllerPassword "_discord_bot/controllers/password"
 
 	"_discord_bot/middleware"
@@ -89,6 +90,12 @@ func registerRoutes(r *gin.Engine) {
 				onMessage.GET("", controllerOnMessage.ListOnMessages)
 				onMessage.POST("", controllerOnMessage.CreateOnMessage)
 				onMessage.POST("/:id/delete", controllerOnMessage.DeleteOnMessage)
+			}
+			onTime := bots.Group("/:uuid/on-time")
+			{
+				onTime.GET("", controllerOnTime.ListOnTime)
+				onTime.POST("", controllerOnTime.CreateOnTime)
+				onTime.POST("/:id/delete", controllerOnTime.DeleteOnTime)
 			}
 		}
 

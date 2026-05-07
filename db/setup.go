@@ -35,6 +35,7 @@ func Init() error {
 		&models.InternalLog{},
 		&models.DiscordBotManagement{},
 		&models.OnMessageBehaviour{},
+		&models.OnTimeBehaviour{},
 	); err != nil {
 		return err
 	}

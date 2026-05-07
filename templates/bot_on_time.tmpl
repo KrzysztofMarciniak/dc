@@ -1,0 +1,113 @@
+{{ template "header" . }}
+{{ template "nav" . }}
+{{ template "status" . }}
+
+<article style="max-width:800px; margin:40px auto; padding:20px;">
+    <div style="margin-bottom:24px;">
+        <h2>Scheduled Messages (Time -> Message)</h2>
+        <a href="/admin-panel/bots/{{ .botUUID }}">← Back to Bot</a>
+    </div>
+
+    <!-- FORM -->
+    <section style="padding:20px; border:1px solid #374151; border-radius:8px; margin-bottom:30px;">
+        <form method="POST" action="/admin-panel/bots/{{ .botUUID }}/on-time" id="onTimeForm">
+            <input type="hidden" name="csrf" value="{{ .csrf }}">
+
+            <div style="margin-bottom:15px;">
+                <label style="display:block; font-size:12px; margin-bottom:4px;">Channel ID</label>
+                <input name="channel_id" placeholder="8372..." required style="width:100%;">
+            </div>
+
+            <div style="display:flex; gap:10px; margin-bottom:15px;">
+                <div style="flex:1;">
+                    <label style="display:block; font-size:12px; margin-bottom:4px;">Trigger Type</label>
+                    <select name="time_type" id="timeTypeSelector" onchange="toggleInputs()" style="width:100%; padding:8px; background:#1f2937; color:white; border:1px solid #374151; border-radius:4px;">
+                        <option value="interval">Repeat (Every X Seconds)</option>
+                        <option value="specific">One-Time (Specific Date & Time)</option>
+                    </select>
+                </div>
+
+                <!-- Interval Input -->
+                <div style="flex:1;" id="intervalBox">
+                    <label style="display:block; font-size:12px; margin-bottom:4px;">Seconds</label>
+                    <input type="number" name="interval_value" id="intervalInput" placeholder="3600" required style="width:100%;">
+                </div>
+
+                <!-- Specific Date & Time Input -->
+                <div style="flex:1; display:none;" id="specificBox">
+                    <label style="display:block; font-size:12px; margin-bottom:4px;">Date & Time</label>
+                    <input type="datetime-local" name="specific_date" id="specificInput" style="width:100%;">
+                </div>
+            </div>
+
+            <div style="margin-bottom:15px;">
+                <label style="display:block; font-size:12px; margin-bottom:4px;">Message to Send</label>
+                <textarea name="message" placeholder="This message is sent on schedule..." required style="width:100%; min-height:60px;"></textarea>
+            </div>
+
+            <button type="submit" style="width:100%; padding:10px; cursor:pointer;">Add Schedule</button>
+        </form>
+    </section>
+
+    <!-- LIST -->
+    <div>
+        {{ range .behaviours }}
+        <div style="padding:15px; border-bottom:1px solid #374151; display:flex; justify-content:space-between; align-items:center;">
+            <div>
+                <div style="display:flex; align-items:center; gap:8px;">
+                    {{ if eq .TimeType "interval" }}
+                        <strong style="color:#10b981;">Every {{ .TimeValue }}s</strong>
+                    {{ else }}
+                        <strong style="color:#6366f1;">At: <span class="unix-to-date">{{ .TimeValue }}</span></strong>
+                    {{ end }}
+                    <span style="font-size:10px; background:#374151; padding:2px 6px; border-radius:4px; color:#9ca3af;">
+                        Channel: {{ .ChannelID }}
+                    </span>
+                </div>
+                <p style="margin:8px 0 0; opacity:0.8; font-family:monospace;">{{ .Message }}</p>
+            </div>
+
+            <form method="POST" action="/admin-panel/bots/{{ $.botUUID }}/on-time/{{ .ID }}/delete">
+                <input type="hidden" name="csrf" value="{{ $.csrf }}">
+                <button type="submit" style="color:#ef4444; background:none; border:none; cursor:pointer; font-weight:bold;">Delete</button>
+            </form>
+        </div>
+        {{ else }}
+        <p style="text-align:center; opacity:0.5; margin-top:40px;">No scheduled tasks yet.</p>
+        {{ end }}
+    </div>
+</article>
+
+<script>
+function toggleInputs() {
+    const type = document.getElementById('timeTypeSelector').value;
+    const intervalBox = document.getElementById('intervalBox');
+    const specificBox = document.getElementById('specificBox');
+
+    const intervalInput = document.getElementById('intervalInput');
+    const specificInput = document.getElementById('specificInput');
+
+    if (type === 'interval') {
+        intervalBox.style.display = 'block';
+        specificBox.style.display = 'none';
+        intervalInput.required = true;
+        specificInput.required = false;
+    } else {
+        intervalBox.style.display = 'none';
+        specificBox.style.display = 'block';
+        intervalInput.required = false;
+        specificInput.required = true;
+    }
+}
+
+// Optional: Convert Unix to readable date in the list
+document.querySelectorAll('.unix-to-date').forEach(el => {
+    const unix = parseInt(el.innerText);
+    if (!isNaN(unix) && unix > 1000000) { // basic check for unix timestamp
+        const date = new Date(unix * 1000);
+        el.innerText = date.toLocaleString();
+    }
+});
+</script>
+
+{{ template "footer" . }}

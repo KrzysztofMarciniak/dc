@@ -36,7 +36,8 @@
             <button type="submit">Verify Credentials</button>
         </form>
 
-        <a href="/admin-panel/bots/{{ .bot.UUID }}/on-message">Behaviour Rules (X -> Y)</a>
+        <a href="/admin-panel/bots/{{ .bot.UUID }}/on-message">On Message (X -> Y)</a>
+        <a href="/admin-panel/bots/{{ .bot.UUID }}/on-time">On Time (time -> Y)</a>
 
         <a href="https://discord.com/api/oauth2/authorize?client_id={{ .bot.ClientID }}&permissions=8&scope=bot%20applications.commands" target="_blank">
             Invite Link
