@@ -205,10 +205,11 @@ func VerifyBotConnection(c *gin.Context) {
 
 	username, err := models.ValidateBotCredentials(bot.Token)
 	if err != nil {
-		//	fmt.Printf("ERROR FROM DISCORD API: %v\n", err)
-		c.Redirect(http.StatusFound, "/admin-panel/bots/"+uuid+"?error=Connection+failed")
+		errorMessage := err.Error()
+		c.Redirect(http.StatusFound, "/admin-panel/bots/"+uuid+"?error="+url.QueryEscape(errorMessage))
 		return
 	}
+
 	successMsg := url.QueryEscape("Verified as " + username)
 	c.Redirect(http.StatusFound, "/admin-panel/bots/"+uuid+"?success="+successMsg)
 }
@@ -228,9 +229,11 @@ func StartBotWorker(c *gin.Context) {
 	uuid := c.Param("uuid")
 
 	if err := services.StartBotBackground(uuid); err != nil {
-		c.Redirect(http.StatusFound, "/admin-panel/bots/"+uuid+"?error=Connection failed")
+		errorMessage := err.Error()
+		c.Redirect(http.StatusFound, "/admin-panel/bots/"+uuid+"?error="+url.QueryEscape(errorMessage))
 		return
 	}
+
 	if is_running := services.IsBotRunning(uuid); is_running == false {
 		c.Redirect(http.StatusFound, "/admin-panel/bots/"+uuid+"?error=Failed to start")
 		return
