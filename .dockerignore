@@ -1,0 +1,6 @@
+.git
+.env
+.env.*
+!.env_example
+database.db
+*.swp

@@ -10,16 +10,17 @@ RUN go mod download
 
 COPY . .
 
-RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o app .
+RUN CGO_ENABLED=1 GOOS=linux go build -ldflags="-s -w" -o app .
 
 FROM alpine:latest
 
-RUN apk add --no-cache sqlite-libs
+RUN apk add --no-cache ca-certificates sqlite sqlite-libs
 
-WORKDIR /root/
+WORKDIR /data
 
-COPY --from=builder /app/app .
+COPY --from=builder /app/app /usr/local/bin/app
+COPY --from=builder /app/templates ./templates
 
 EXPOSE 8080
 
-CMD ["./app"]
+CMD ["/usr/local/bin/app"]
